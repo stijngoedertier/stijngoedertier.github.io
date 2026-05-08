@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <script class="remove" src="https://cdn.jsdelivr.net/gh/w3c/respec-mermaid@1.2.0/dist/main.js"></script>
+    <script src='https://www.w3.org/Tools/respec/respec-w3c' async class='remove'></script>
+    <script class='remove'>
+        // All config options at https://respec.org/docs/
+        var respecConfig = {
+            specStatus: "unofficial",
+            latestVersion: "https://stijngoedertier.github.io",
+            edDraftURI: "https://stijngoedertier.github.io",
+            commitHistoryURL: "https://github.com/stijngoedertier/stijngoedertier.github.io/commits/main",
+            logos: [{
+                src: "./img/x-cite-logo.svg",
+                alt: "x-CITE",
+                width: 200,
+                height: 48,
+            }],
+            editors: [{
+                name: "Tom Van Gulck",
+                url: "http://your-site.com",
+            }, {
+                name: "Lieven Raes",
+                url: "http://your-site.com",
+            }, {
+                name: "Geert Van Haute",
+                url: "http://your-site.com",
+            }, {
+                name: "Pieter Fannes",
+                url: "http://your-site.com",
+            }, {
+                name: "Stijn Goedertier",
+                url: "http://your-site.com",
+            }],
+            github: {
+                branch: "main",
+                repoURL: "user/my-awesome-api",
+            },
+            // See https://respec.org/docs/#xref for usage.
+            xref: "web-platform",
+            localBiblio: {
+                "P-PLAN": {
+                    title: "The P-PLAN Ontology",
+                    href: "http://purl.org/net/p-plan",
+                    status: "ED",
+                    authors: ["Daniel Garijo", "Yolanda Gil"],
+                }},
+            license: "cc-by",
+            additionalCopyrightHolders: "",
+            preProcess: [window.respecMermaid.createFigures]
+        };
+    </script>
+</head>
+<body>
+<h1 id="title">Simulation model catalog vocabulary</h1>
+<section id='abstract'>
+    <p>
+        MoCAT is a vocabulary for describing simulation models. This document lists its requirements,
+        defines the schema and provides examples.
+    </p>
+    <p>
+        A simulation model is a tool to make a digital representation of a real-world phenomenon in nature,
+        within a population, in a transport network, etc..
+        We can use simulation models to better understand observations of the past
+        or to study the impact of changes in the future.
+    </p>
+    <p>
+        A common vocabulary for describing simulation models on the Web enhances its discoverability and automation
+        potential.
+    </p>
+</section>
+<section id="requirements" class="informative">
+    <h2>Requirements</h2>
+    The following table summarizes the use cases for a simulation model catalog.
+
+
+    <table>
+        <thead>
+        <tr>
+            <th>Summary</th>
+            <th>Description</th>
+            <th>Priority</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Discover simuation models</td>
+            <td>Users must be able to find and compare relevant simulation models based on domain, purpose, legal constraints,
+                ownership, licensing, quality assessments, validation reports, and compliance with internal or
+                regulatory standards,reducing duplication of effort and improving transparency across organizations.
+            </td>
+            <td>High</td>
+        </tr>
+        <tr>
+            <td>Test interoperability</td>
+            <td> Metadata enables automated reasoning about which models can use which
+                datasets (and vice versa) by
+                describing input/output data structures, semantics, spatial/temporal resolution, units, and licensing
+                constraints, allowing systems to automatically match or flag incompatibilities.
+            </td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Reproduce a simulation run</td>
+            <td>Metadata captures version history, parameter sets, data provenance, and software dependencies so that
+                simulation results can be reproduced, audited, or certified, even when original creators are no longer
+                involved. [[PROV-O]]
+            </td>
+            <td>High</td>
+        </tr>
+        </tbody>
+    </table>
+
+</section>
+
+<section id="overview" class="informative">
+    <h2>Vocabulary overview</h2>
+
+    <div class="note" role="note" id="note0">
+        <div role="heading" class="note-title marker" id="h-note-3" aria-level="4"><span>Requirments first</span></div>
+        <aside class="">
+            <p>
+                Let uss first discuss requirements (such as use cases and definitions) and not be overly
+                distracted by data models and existing ontologies.
+            </p>
+        </aside>
+    </div>
+
+
+    <figure>
+  <pre class="diagram mermaid">---
+config:
+  layout: elk
+  look: handDrawn
+---
+classDiagram
+    class Resource {
+        dct:title
+        dct:description
+        dct:identifier
+        dct:issued
+        dct:modified
+        dct:language
+        dct:publisher
+    }
+
+    class Catalog {
+        dcat:dataset
+        dcat:service
+        dct:publisher
+        dct:language
+        dct:issued
+        dct:modified
+    }
+
+    class SimulationModel {
+        dct:title
+        dct:description
+        dcat:keyword
+    }
+
+    class DataSpecification {
+        dct:title
+        dct:description
+    }
+
+    class Dataset {
+        dct:title
+        dct:description
+        dcat:keyword
+        dcat:theme
+        dct:publisher
+        dct:issued
+        dct:modified
+        dcat:distribution
+    }
+
+    class DatasetSeries {
+        dct:title
+        dct:description
+        dcat:hasPart
+        dcat:isPartOf
+    }
+
+    class Distribution {
+        dct:title
+        dct:description
+        dct:format
+        dcat:accessURL
+        dcat:downloadURL
+        spdx:checksum
+    }
+
+    class DataService {
+        dct:title
+        dct:description
+        dcat:endpointURL
+        dcat:endpointDescription
+        dcat:servesDataset
+    }
+
+    class Agent {
+        foaf:name
+    }
+
+    style SimulationModel fill:#f9f,stroke:#333,stroke-width:4px
+    style DataSpecification fill:#f9f,stroke:#333,stroke-width:4px
+
+    %% Inheritance
+    Resource <|-- Dataset
+    Resource <|-- DataService
+    Resource <|-- Catalog
+
+    %% Relationships
+    Catalog --> Dataset : dcat dataset
+    Catalog --> DataService : dcat service
+    Catalog --> SimulationModel : model
+    Dataset --> Distribution : dcat distribution
+    Dataset --> DatasetSeries : dct isPartOf
+    Resource --> Agent : dct publisher
+    DataService --> Dataset : dcat servesDataset
+    SimulationModel --> DataSpecification : input
+    SimulationModel -->  DataSpecification : output
+    Dataset --> DataSpecification : dct conformsTo
+
+  </pre>
+        <figcaption>overview diagram</figcaption>
+    </figure>
+
+</section>
+
+<section id="vocabulary-specification">
+    <h2>Vocabulary specification</h2>
+    <p>
+        The MoCAT vocabulary makes use of the [[VOCAB-DCAT-3]], [[PROV-O]], and [[P-PLAN]] specifications.
+        The MoCAT vocabulary specification is available at
+    </p>
+    <section data-dfn-for="Simulation Model">
+        <h3>Simulation Model</h3>
+
+        <dfn>A simulation model is a tool to make a digital representation of a real-world phenomenon.</dfn>
+
+        <p>
+           This digital representation has a theoretical and mathematical basis.
+           The simulation model is usually implemented in source code and software.
+        </p>
+
+    </section>
+
+
+    <section data-dfn-for="DataSpecification">
+        <h3>Data Specification</h3>
+        <dfn>A data specification describes how data is structured. </dfn>
+        <p>Each input and output of a simulation model
+            can have its own data specification. The data is not necessarily structured as RDF.
+            In the case of RDF data, [[SHACL]] can be used. </p>
+
+    </section>
+</section>
+</section>
+</body>
+</html>
