@@ -25,6 +25,9 @@
                 name: "Lieven Raes",
                 url: "http://your-site.com",
             }, {
+                name: "Veerle Timmermans",
+                url: "http://your-site.com",
+            }, {
                 name: "Geert Van Haute",
                 url: "http://your-site.com",
             }, {
@@ -58,7 +61,7 @@
 <h1 id="title">Simulation model catalog vocabulary</h1>
 <section id='abstract'>
     <p>
-        MoCAT is a vocabulary for describing simulation models. This document lists its requirements,
+        MoCAT is a vocabulary for describing simulation models. This document lists the requirements,
         defines the schema and provides examples.
     </p>
     <p>
@@ -77,7 +80,8 @@
     The following table summarizes the use cases for a simulation model catalog.
 
 
-    <table>
+    <table class="numbered">
+
         <thead>
         <tr>
             <th>Summary</th>
@@ -99,17 +103,30 @@
             <td>2. Test interoperability of input data</td>
             <td>Metadata enables automated reasoning about which models can use which
                 datasets (and vice versa) by
-                describing input/output data structures (syntax verification), validation rules (semantic validation),
+                describing input/output data structures (syntax verification),
+
+                <p>Departement Omgeving wants to have an overview of all simulation models that are used in its public
+                    services.
+                    This includes the MER.
+                </p>validation rules (semantic validation),
                 spatial/temporal resolution, units, and licensing
                 constraints, allowing systems to automatically match or flag incompatibilities.
             </td>
             <td>Could</td>
         </tr>
         <tr>
-            <td>3. Reproduce a simulation run</td>
+            <td>3. Make a simulation run reproducible</td>
             <td>Metadata captures version history, parameter sets, data provenance, and software dependencies so that
                 simulation results can be reproduced, audited, or certified, even when original creators are no longer
                 involved. [[PROV-O]]
+            </td>
+            <td>Won't</td>
+        </tr>
+        <tr>
+            <td>4. Make the simulation model algorithm accessible</td>
+            <td>Metadata represents the algorithm of a simulation model as a number of steps
+                and their execution logic. This makes the internal functioning of a simulation model
+                accessible in a standardized way. Ontologies such as [[P-PLAN]] can be a basis for this.
             </td>
             <td>Won't</td>
         </tr>
@@ -132,15 +149,24 @@
         <li>usage constraints</li>
         <li>ownership</li>
         <li>licensing</li>
-        <li>quality assessments</li>
+        <li>quality assessments such as those in the [[DQV]]</li>
         <li>validation reports</li>
-        <li>compliance with internal or regulatory standards</li>
+        <li>compliance with internal or regulatory standards.
+            For example, Departement Omgeving speaks of being plesto"MER compliant".
+        </li>
         <li>source code repository URL</li>
         <li>releases URL</li>
         <li>collaboration</li>
         <li>data services</li>
+        <li>Algorithm</li>
+        <li>Invocation mode: whether results of a simulation run are presented synchronously or asynchronously to a
+            user.
+        </li>
     </ul>
     </p>
+
+    <p>A simulation model is the whole of method, algorithm, implemented in software, documentation, etc.
+        A simulation model can be used as software or as a service.</p>
 
 
     <section id="uc-test-interoperability"></section>
@@ -153,8 +179,7 @@
 
 <section id="overview" class="informative">
     <h2>Vocabulary overview</h2>
-
-    <div class="note" role="note" id="note0">
+    <div class="note" role="note" id="note0" vocabulary>
         <div role="heading" class="note-title marker" id="h-note-3" aria-level="4"><span>Requirments first</span></div>
         <aside class="">
             <p>
@@ -301,18 +326,24 @@ classDiagram
     <h1>Implementation report</h1>
 
 
-<section id="metadata-creation">
-    <h3>Metadata creation</h3>
+    <section id="metadata-creation">
+        <h3>Metadata creation</h3>
 
-    <p>
-        We will incorporate the creation of metadata for simulation models by embedding this in the software development
-        lifecycle of the simulation model.
-        A release of a new version of the simulation model by the software build engine will trigger
-        the creation of a new metadata record that will be included in a Triplestore.
-        The triple store is schema-free and enables various use cases.
-    </p>
+        <p>Departement Omgeving wants to have an overview of all simulation models that are used in its public services.
+            This includes the MER.
+        </p>
 
-    <figure>
+        <p>
+            We will incorporate the creation of metadata for simulation models by embedding this in the software
+            development
+            lifecycle of the simulation model.
+            A release of a new version of the simulation model by the software build engine will trigger
+            the creation of a new metadata record that will be included in a Triplestore.
+            The triple store is schema-free and enables various use cases.
+            Use case 12 in WP4 of the [x-cite citiverse](https://xcitecitiverse.eu/) project.
+        </p>
+
+        <figure>
   <pre class="diagram mermaid">---
 config:
   layout: elk
@@ -327,17 +358,17 @@ flowchart LR
     git --> build_engine
     build_engine --> triplestore
   </pre>
-        <figcaption>Metadata creation</figcaption>
-    </figure>
-</section>
+            <figcaption>Metadata creation</figcaption>
+        </figure>
+    </section>
 
-<h3>Metadata publication and harvesting</h3>
+    <h3>Metadata publication and harvesting</h3>
 
-We will publish a limited subset of the metadata as ISO19115 metadata records using the Geonetwork catalog.
-This catalog facilitates a facetted search expierence via ElasticSearch.
+    We will publish a limited subset of the metadata as ISO19115 metadata records using the Geonetwork catalog.
+    This catalog facilitates a facetted search expierence via ElasticSearch.
 
 
-<figure>
+    <figure>
   <pre class="diagram mermaid">---
 config:
   layout: elk
@@ -354,11 +385,11 @@ flowchart LR
     triplestore --> lod_endpoint
     lod_endpoint --> geonetwork
   </pre>
-    <figcaption>Metadata publication</figcaption>
-</figure>
+        <figcaption>Metadata publication</figcaption>
+    </figure>
 
 
-<h3>Metadata usage</h3>
+    <h3>Test interoperability of input data</h3>
 </section>
 
 </body>
