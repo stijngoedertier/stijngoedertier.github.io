@@ -16,6 +16,7 @@
                 alt: "x-CITE",
                 width: 200,
                 height: 48,
+                url: "https://xcitecitiverse.eu/",
             }],
             editors: [{
                 name: "Tom Van Gulck",
@@ -35,7 +36,7 @@
             }],
             github: {
                 branch: "main",
-                repoURL: "user/my-awesome-api",
+                repoURL: "https://github.com/stijngoedertier/stijngoedertier.github.io",
             },
             // See https://respec.org/docs/#xref for usage.
             xref: "web-platform",
@@ -45,7 +46,8 @@
                     href: "http://purl.org/net/p-plan",
                     status: "ED",
                     authors: ["Daniel Garijo", "Yolanda Gil"],
-                }},
+                }
+            },
             license: "cc-by",
             additionalCopyrightHolders: "",
             preProcess: [window.respecMermaid.createFigures]
@@ -61,7 +63,7 @@
     </p>
     <p>
         A simulation model is a tool to make a digital representation of a real-world phenomenon in nature,
-        within a population, in a transport network, etc..
+        within a population, in a transport network, etc.
         We can use simulation models to better understand observations of the past
         or to study the impact of changes in the future.
     </p>
@@ -85,32 +87,67 @@
         </thead>
         <tbody>
         <tr>
-            <td>Discover simuation models</td>
-            <td>Users must be able to find and compare relevant simulation models based on domain, purpose, legal constraints,
+            <td>1. Discover simuation models</td>
+            <td>Users must be able to find and compare relevant simulation models based on domain, purpose, legal
+                constraints,
                 ownership, licensing, quality assessments, validation reports, and compliance with internal or
                 regulatory standards,reducing duplication of effort and improving transparency across organizations.
             </td>
-            <td>High</td>
+            <td>Must</td>
         </tr>
         <tr>
-            <td>Test interoperability</td>
-            <td> Metadata enables automated reasoning about which models can use which
+            <td>2. Test interoperability of input data</td>
+            <td>Metadata enables automated reasoning about which models can use which
                 datasets (and vice versa) by
-                describing input/output data structures, semantics, spatial/temporal resolution, units, and licensing
+                describing input/output data structures (syntax verification), validation rules (semantic validation),
+                spatial/temporal resolution, units, and licensing
                 constraints, allowing systems to automatically match or flag incompatibilities.
             </td>
-            <td>Medium</td>
+            <td>Could</td>
         </tr>
         <tr>
-            <td>Reproduce a simulation run</td>
+            <td>3. Reproduce a simulation run</td>
             <td>Metadata captures version history, parameter sets, data provenance, and software dependencies so that
                 simulation results can be reproduced, audited, or certified, even when original creators are no longer
                 involved. [[PROV-O]]
             </td>
-            <td>High</td>
+            <td>Won't</td>
         </tr>
         </tbody>
     </table>
+
+    <section id="uc-discover"></section>
+    <h3>Discover simuation models</h3>
+
+    <p>Users can discover simulation models by searching and comparing simulation models on various descriptive metadata
+        fields:
+    <ul>
+        <li>title</li>
+        <li>description</li>
+        <li>purpose</li>
+        <li>origin</li>
+        <li>keywords</li>
+        <li>domain</li>
+        <li>legal constraints</li>
+        <li>usage constraints</li>
+        <li>ownership</li>
+        <li>licensing</li>
+        <li>quality assessments</li>
+        <li>validation reports</li>
+        <li>compliance with internal or regulatory standards</li>
+        <li>source code repository URL</li>
+        <li>releases URL</li>
+        <li>collaboration</li>
+        <li>data services</li>
+    </ul>
+    </p>
+
+
+    <section id="uc-test-interoperability"></section>
+    <h3>Test interoperability</h3>
+
+    <section id="uc-reproduce-run"></section>
+    <h3>Reproduce a simulation run</h3>
 
 </section>
 
@@ -121,7 +158,7 @@
         <div role="heading" class="note-title marker" id="h-note-3" aria-level="4"><span>Requirments first</span></div>
         <aside class="">
             <p>
-                Let uss first discuss requirements (such as use cases and definitions) and not be overly
+                Let us first discuss requirements (such as use cases and definitions) and not be overly
                 distracted by data models and existing ontologies.
             </p>
         </aside>
@@ -242,8 +279,8 @@ classDiagram
         <dfn>A simulation model is a tool to make a digital representation of a real-world phenomenon.</dfn>
 
         <p>
-           This digital representation has a theoretical and mathematical basis.
-           The simulation model is usually implemented in source code and software.
+            This digital representation has a theoretical and mathematical basis.
+            The simulation model is usually implemented in source code and software.
         </p>
 
     </section>
@@ -258,6 +295,71 @@ classDiagram
 
     </section>
 </section>
+
+
+<section id="implementation" class="informative">
+    <h1>Implementation report</h1>
+
+
+<section id="metadata-creation">
+    <h3>Metadata creation</h3>
+
+    <p>
+        We will incorporate the creation of metadata for simulation models by embedding this in the software development
+        lifecycle of the simulation model.
+        A release of a new version of the simulation model by the software build engine will trigger
+        the creation of a new metadata record that will be included in a Triplestore.
+        The triple store is schema-free and enables various use cases.
+    </p>
+
+    <figure>
+  <pre class="diagram mermaid">---
+config:
+  layout: elk
+  look: handDrawn
+  htmlLabels: false
+---
+flowchart LR
+    git[("***git source repo***")]
+    build_engine["`***build engine***
+      (Jenkins)`"]
+    triplestore[("***Triplestore***")]
+    git --> build_engine
+    build_engine --> triplestore
+  </pre>
+        <figcaption>Metadata creation</figcaption>
+    </figure>
 </section>
+
+<h3>Metadata publication and harvesting</h3>
+
+We will publish a limited subset of the metadata as ISO19115 metadata records using the Geonetwork catalog.
+This catalog facilitates a facetted search expierence via ElasticSearch.
+
+
+<figure>
+  <pre class="diagram mermaid">---
+config:
+  layout: elk
+  look: handDrawn
+  htmlLabels: false
+---
+flowchart LR
+    triplestore[("***Triplestore***")]
+    lod_endpoint["`***LOD endpoint***
+      data.omgeving.vlaanderen.be`"]
+    geonetwork["`***GeoNetwork***
+      ISO19115-metadata
+      metadata.omgeving.vlaanderen.be`"]
+    triplestore --> lod_endpoint
+    lod_endpoint --> geonetwork
+  </pre>
+    <figcaption>Metadata publication</figcaption>
+</figure>
+
+
+<h3>Metadata usage</h3>
+</section>
+
 </body>
 </html>
