@@ -10,11 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * ValidateOntology test class.
  *
- * <p>Uses {@link be.vlaanderen.omgeving.mocat.OntologyValidator} to validate:
- * <ol>
- *   <li>DatasetQuality ontology (custom, under development)</li>
- *   <li>Example DCAT dataset instance data (Turtle)</li>
- * </ol>
+ * <p>Uses {@link be.vlaanderen.omgeving.mocat.OntologyValidator} to validate.
  *
  * <p>Validation checks performed:
  * <ul>
@@ -31,6 +27,7 @@ public class TestOntologyValidity {
     private static final String DCAT_TTL = "ontologies/dcat3.ttl";
     private static final String PROVO_TTL = "ontologies/prov-o.ttl";
     private static final String PPLAN_TTL = "ontologies/p-plan.owl";
+    private static final String SHACL_TTL = "ontologies/shacl.ttl";
     private static final String CUSTOM_ONT_TTL = "ontologies/mocat-ontology.ttl";
     private static final String EXAMPLE_DATA_TTL = "ontologies/mocat-example.ttl";
 
@@ -46,12 +43,13 @@ public class TestOntologyValidity {
             validator.setLogLevel("org.semanticweb", "WARN");
             validator.setLogLevel("uk.ac.manchester", "WARN");
 
-            validator.printBanner("OWL Ontology Validator – DCAT + PROV-O + DatasetQuality");
+            validator.printBanner("OWL Ontology Validator");
 
             // ── 1. Build a merged ontology ────────────────────────────────────
             validator.loadAndMerge("DCAT", DCAT_TTL, DCAT_URL);
             validator.loadAndMerge("PROV-O", PROVO_TTL, PROVO_URL);
             validator.loadAndMerge("P-Plan", PPLAN_TTL, null);
+            validator.loadAndMerge("SHACL", SHACL_TTL, null);
             validator.loadAndMerge("MocatOntology", CUSTOM_ONT_TTL, null);
             validator.loadAndMerge("MocatExample", EXAMPLE_DATA_TTL, null);
 

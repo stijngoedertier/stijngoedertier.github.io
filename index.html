@@ -241,6 +241,22 @@ classDiagram
         dct:description
     }
 
+    class NodeShape["NodeShape
+      sh:NodeShape"] {
+        sh:targetClass
+        sh:name
+        sh:description
+    }
+
+    class PropertyShape["PropertyShape
+      sh:PropertyShape"] {
+        sh:path
+        sh:name
+        sh:description
+        sh:datatype
+        sh:minCount
+        sh:maxCount}
+
     class Dataset["Dataset
       dcat:Dataset"] {
         dct:title
@@ -251,14 +267,6 @@ classDiagram
         dct:issued
         dct:modified
         dcat:distribution
-    }
-
-    class DatasetSeries["DatasetSeries
-      dcat:DatasetSeries"] {
-        dct:title
-        dct:description
-        dcat:hasPart
-        dcat:isPartOf
     }
 
     class Distribution["Distribution
@@ -300,16 +308,18 @@ classDiagram
     Catalog --> DataService : dcat service
     Catalog --> SimulationModel : model
     Dataset --> Distribution : dcat distribution
-    Dataset --> DatasetSeries : dct isPartOf
     Resource --> Agent : dct publisher
     DataService --> Dataset : dcat servesDataset
     SimulationModel --> DataSpecification : mocat input
     SimulationModel -->  DataSpecification : output
     Dataset --> DataSpecification : dct conformsTo
+    DataSpecification --> NodeShape: sh node
+    NodeShape --> PropertyShape: sh property
     Dataset --> SimulationModel: prov wasDerivedFrom
     SimulationRun --> Dataset : prov used
     Dataset --> SimulationRun : prov wasGeneratedBy
     SimulationRun --> SimulationModel: prov wasDerivedFrom
+    SimulationRun --> Agent : prov wasAssociatedWith
 
   </pre>
         <figcaption>overview diagram</figcaption>
