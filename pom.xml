@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>acd-springboot-parent</artifactId>
+        <groupId>be.milieuinfo</groupId>
+        <version>3.5.13.0</version>
+    </parent>
+
+    <groupId>be.vlaanderen.omgeving.mocat</groupId>
+    <artifactId>mocat-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <description>Metadata specification parental POM</description>
+    <packaging>pom</packaging>
+
+    <name>MoCat metadata spec - Parent</name>
+
+    <modules>
+        <module>owl-validator</module>
+        <module>mocat-ontology</module>
+    </modules>
+
+
+</project>
