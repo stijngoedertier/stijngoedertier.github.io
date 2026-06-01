@@ -1,0 +1,64 @@
+# =============================================================================
+# MoCAT Ontology  (under development)
+# Uses DCAT and PROV-O to represent simulation model concepts.
+# =============================================================================
+@prefix mocat:   <http://example.org/ontology/mocat#> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix p-plan:  <http://purl.org/net/p-plan#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+
+# ── Ontology
+
+<http://example.org/ontology/mocat>
+    a            owl:Ontology ;
+    rdfs:label   "Simulation Model Catalog"@en ;
+    rdfs:comment "Vocabulary for expressing quality assessments of DCAT datasets."@en ;
+    owl:imports  <http://www.w3.org/ns/dcat> ;
+    owl:imports  <http://www.w3.org/ns/prov-o#> .
+
+# ── Classes
+
+mocat:SimulationModel
+    a               owl:Class ;
+    rdfs:label      "Simulation Model"@en ;
+    rdfs:subClassOf prov:Plan ;
+    rdfs:subClassOf p-plan:Plan .
+
+mocat:DataSpecification
+    a               owl:Class ;
+    rdfs:label      "Data Specification"@en ;
+    rdfs:comment    "A specification of the data structure of an input or output dataset."@en ;
+    rdfs:subClassOf dcat:Resource ;
+    rdfs:subClassOf prov:Entity .
+
+mocat:SimulationRun
+    a               owl:Class ;
+    rdfs:label      "Simulation Run"@en ;
+    rdfs:comment    "Represents the (past) activity or running a simulation once with specific run configuration parameters, input and output datasets."@en ;
+    rdfs:subClassOf dcat:Resource ;
+    rdfs:subClassOf prov:Activity .
+
+
+# ── Object Properties
+
+mocat:conformsToSpecification
+    a                  owl:ObjectProperty ;
+    rdfs:label         "conforms to specification"@en ;
+    rdfs:subPropertyOf dcterms:conformsTo ;
+    rdfs:domain        dcat:Dataset ;
+    rdfs:range         mocat:DataSpecification .
+
+
+# ── Datatype Properties
+
+
+# ── Disjointness constraints
+[]
+    a           owl:AllDisjointClasses ;
+    owl:members ( mocat:DataSpecification dcat:Dataset mocat:SimulationRun ) .

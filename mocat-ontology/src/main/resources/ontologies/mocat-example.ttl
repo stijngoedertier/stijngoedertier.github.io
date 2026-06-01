@@ -1,0 +1,75 @@
+# =============================================================================
+# Example MoCat Simulation Model metadata  (instance data)
+# =============================================================================
+@prefix ex:      <http://example.org/data/> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix p-plan:	<http://purl.org/net/p-plan#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vcard:   <http://www.w3.org/2006/vcard/ns#> .
+
+
+# ── Publisher
+ex:TML
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Transport and Mobility Leuven"@en .
+
+ex:OMG
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Departement Omgeving"@nl .
+
+ex:CEGEKA
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "CEGEKA"@en .
+
+# ── Catalogue
+ex:OpenDataCatalogue
+    a                 dcat:Catalog ;
+    dcterms:title     "Catalog of Simulation Models"@en ;
+    dcterms:publisher ex:OMG ;
+    dcat:dataset      ex:traffic-scout .
+
+# ── Simulation Model
+ex:traffic-scout
+    a                 p-plan:Plan ;
+    dcterms:title     "Traffic Scout"@en ;
+    dcterms:description
+                      """Traffic Scout combines an interactive map and a simulation tool to provide insight into local traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data, traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level (municipality, district, neighborhood)."""@en ;
+    dcterms:type      "Verkeer"@nl ;
+    dcterms:publisher ex:TML ;
+    dcterms:creator   ex:TML, ex:CEGEKA ;
+    dcterms:issued    "2020-03-15"^^xsd:date ;
+    dcterms:modified  "2020-03-15"^^xsd:date ;
+    dcat:keyword      "traffic"@en, "simulation"@en ;
+    dcat:contactPoint ex:TrafficScoutContact ;
+    dcat:distribution ex:traffic-scout-jar-dist .
+
+# ── Distributions
+ex:traffic-scout-jar-dist
+    a                dcat:Distribution ;
+    dcat:accessURL   "<<Link>>" ;
+    dcat:downloadURL <http://example.org/software/traffic-scout.jar> ;
+    dcterms:byteSize "651208800"^^xsd:decimal .
+
+
+# ── Contact point
+ex:TrafficScoutContact
+    a              vcard:Kind ;
+    vcard:fn       "Traffic Scout Team" ;
+    vcard:hasEmail <mailto:ts@example.org> .
+
+
+# ── Simulation Run
+ex:abc123
+    a                      prov:Activity ;
+    rdfs:label             "Simulation Run abc123"@en ;
+    prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
+    prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
+    prov:wasAssociatedWith ex:TSSoftwareAgent ;
+    prov:wasDerivedFrom    ex:traffic-scout .
+
+
+
