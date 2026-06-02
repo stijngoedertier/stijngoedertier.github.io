@@ -91,7 +91,7 @@ ex:TransportNodeShape
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport node must have exactly one point geometry (geom)." ; ] ;
+                     sh:message  "A transport node must have exactly one (point) geometry (geom)." ; ] ;
     sh:sparql      [ sh:message "Each transport node must be connected to at least one transport link." ;
                      sh:select  """
             SELECT ?this
@@ -104,6 +104,11 @@ ex:TransportNodeShape
 ex:TransportLinkShape
     a              sh:NodeShape ;
     sh:targetClass ex:TransportLink ;
+    sh:property    [ sh:path     ex:length ;
+                     sh:datatype xsd:double ;
+                     sh:minCount 1 ;
+                     sh:maxCount 1 ;
+                     sh:message  "A transport link must have exactly one length property." ; ] ;
     sh:property    [ sh:path     ex:source ;
                      sh:class    ex:TransportNode ;
                      sh:minCount 1 ;
@@ -118,7 +123,7 @@ ex:TransportLinkShape
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one linestring geometry (geom)." ; ] .
+                     sh:message  "A transport link must have exactly one (linestring) geometry (geom)." ; ] .
 
 
 # ── Dataset

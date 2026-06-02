@@ -61,4 +61,4 @@ mocat:conformsToSpecification
 # ── Disjointness constraints
 []
     a           owl:AllDisjointClasses ;
-    owl:members ( mocat:DataSpecification dcat:Dataset mocat:SimulationRun ) .
+    owl:members ( mocat:DataSpecification dcat:Dataset mocat:SimulationRun mocat:SimulationModel  ) .
