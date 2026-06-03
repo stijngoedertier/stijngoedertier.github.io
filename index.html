@@ -72,7 +72,7 @@
     <p>
         A simulation model is a tool to make a digital representation of a real-world phenomenon in nature,
         within a population, in a transport network, etc.
-        We can use simulation models to better understand observations of the past
+        We use simulation models to better understand observations of the past
         or to study the impact of changes in the future.
     </p>
     <p>
@@ -82,69 +82,17 @@
 </section>
 <section id="requirements" class="informative">
     <h2>Requirements</h2>
-    <p>The following table summarizes the use cases for a simulation model catalog.</p>
-
-
-    <table class="numbered">
-
-        <thead>
-        <tr>
-            <th>Summary</th>
-            <th>Description</th>
-            <th>Priority</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>1. Discover simulation models</td>
-            <td>Users must be able to find, compare, and obtain relevant simulation models.
-            </td>
-            <td>Must</td>
-        </tr>
-        <tr>
-            <td>2. Test interoperability of input datasets </td>
-            <td>Users must be able to assess via automated reasoning which input datasets are compatible with a
-                simulation model based on the data specification.
-            <td>Could</td>
-        </tr>
-        <tr>
-            <td>3. Start a simulation run via a universal interface</td>
-            <td>It must be possible to run simulation models via a universal Application Programming Interface (API).
-                The input and output parameters of the API methods are based on a common metamodel.
-                A user can configure and execute a simulation run, inspect the results (output datasets) of previous simulation runs, etc.
-            </td>
-            <td>Could</td>
-        </tr>
-        <tr>
-            <td>4. Make a simulation run reproducible</td>
-            <td>Metadata captures version history, parameter sets, data provenance, and software dependencies so that
-                simulation results can be reproduced, audited, or certified, even when original creators are no longer
-                involved. [[PROV-O]]
-            </td>
-            <td>Won't</td>
-        </tr>
-        <tr>
-            <td>5. Make the execution logic of a simulation model accessible</td>
-            <td>Metadata represents the algorithm of a simulation model as a number of steps
-                and their execution logic. This makes the internal functioning of a simulation model
-                accessible in a standardized way. Ontologies such as [[P-PLAN]] can be a basis for this.
-            </td>
-            <td>Won't</td>
-        </tr>
-        </tbody>
-    </table>
 
     <section id="uc-discover"></section>
     <h2>Discover simulation models</h2>
 
-    <p>Users can discover simulation models by searching and comparing simulation models on various descriptive metadata
+    <p>Users can discover simulation models by searching for and comparing simulation models using various descriptive
+        metadata
         fields:
     </p>
     <ul>
         <li>title</li>
         <li>description</li>
-        <li>purpose</li>
-        <li>origin</li>
         <li>keywords</li>
         <li>domain</li>
         <li>legal constraints</li>
@@ -154,7 +102,7 @@
         <li>quality assessments such as those in the [[VOCAB-DQV]]</li>
         <li>validation reports</li>
         <li>Compliance with internal or regulatory standards.
-            For example, Departement Omgeving speaks of being "MER compliant".
+            For example, Departement Omgeving speaks of "MER compliance".
         </li>
         <li>source code repository URL</li>
         <li>releases URL</li>
@@ -173,13 +121,25 @@
 
     <section id="uc-test-interoperability"></section>
     <h2>Test interoperability of input datasets</h2>
+    <p>Users must be able to assess via automated reasoning which input datasets are compatible with a
+        simulation model based on the data specification.</p>
 
     <section id="uc-api"></section>
     <h2>Start a simulation run via a universal interface</h2>
+    <p>It must be possible to run simulation models via a universal Application Programming Interface (API).
+        The input and output parameters of the API methods are based on a common metamodel.
+        A user can configure and execute a simulation run, inspect the results (output datasets) of previous simulation
+        runs, etc.</p>
+    <p>Metadata represents the algorithm of a simulation model as a number of steps
+        and their execution logic. This makes the internal functioning of a simulation model
+        accessible in a standardized way. Ontologies such as [[P-PLAN]] can be a basis for this.</p>
 
 
     <section id="uc-reproduce-run"></section>
-    <h2>Make a simulation run reporducible</h2>
+    <h2>Make a simulation run reproducible</h2>
+    <p>Metadata captures version history, parameter sets, data provenance, and software dependencies so that
+        simulation results can be reproduced, audited, or certified, even when original creators are no longer
+        involved. [[PROV-O]]</p>
 
 </section>
 
@@ -338,7 +298,7 @@ classDiagram
 
 </section>
 
-<section id="namespaces">
+<section id="namespaces" class="normative">
     <h2>Namespaces</h2>
     <p>The namespace for MoCat is <code>http://TODO#</code>.
     </p>
@@ -385,6 +345,11 @@ classDiagram
             <td>[[LOCN]]</td>
         </tr>
         <tr>
+            <td><code>mocat</code></td>
+            <td><code>http://TODO/mocat#</code></td>
+            <td>[[MOCAT]]</td>
+        </tr>
+        <tr>
             <td><code>owl</code></td>
             <td><code>http://www.w3.org/2002/07/owl#</code></td>
             <td>[[OWL2-SYNTAX]]</td>
@@ -428,7 +393,7 @@ classDiagram
     </table>
 </section>
 
-<section id="vocabulary-specification">
+<section id="vocabulary-specification" class="normative">
     <h2>Vocabulary specification</h2>
     <p>
         The MoCAT vocabulary makes use of the [[VOCAB-DCAT-3]], [[PROV-O]], and [[P-PLAN]] specifications.
@@ -440,11 +405,48 @@ classDiagram
 
         <p>A <dfn>simulation model</dfn> is a tool to make a digital representation of a real-world phenomenon.</p>
 
-        <p>
-            This digital representation has a theoretical and mathematical basis.
-            The simulation model is usually implemented in source code and software.
+        <p>A simulation model may have a basis in physics, math and/or statistics.
+            In addition to this theoretical foundation, the simulation model is usually implemented
+            in source code and software. We see the simulation model as the whole: the mathematical or physical model,
+            the algorithm, and the software that makes it executable.
         </p>
 
+        <aside class="example" title="Simulation Model">
+  <pre class="ttl">
+ex:traffic-scout
+    a                   prov:Plan ;
+    dcterms:type        mocat:stimulation_model ;
+    dcterms:title       "Traffic Scout"@en ;
+    dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide insight into local
+traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data,
+traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition
+of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level
+(municipality, district, neighborhood)."""@en ;
+    dcterms:publisher   ex:TML ;
+    dcterms:creator     ex:TML, ex:CEGEKA ;
+    dcterms:issued      "2020-03-15"^^xsd:date ;
+    dcterms:modified    "2020-03-15"^^xsd:date ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
+    dcat:contactPoint   ex:TrafficScoutContact ;
+    dcat:distribution   ex:traffic-scout-jar-dist ;
+    mocat:input         ex:TransportNetworkSchema .
+  </pre>
+        </aside>
+
+
+        <section data-dfn-for="inputSchema">
+            <h4>Property: inputSchema</h4>
+            <p>The <dfn>input schema</dfn> of a [=simulation model=] is a data specification that describes
+                how an input dataset of a [=simulation run=] is structured. </p>
+
+        </section>
+
+        <section data-dfn-for="outputSchema">
+            <h4>Property: outputSchema</h4>
+            <p>The <dfn>output schema</dfn> of a [=simulation model=] is a data specification that describes
+                how an output dataset of a [=simulation run=] is structured. </p>
+
+        </section>
 
 
     </section>
@@ -461,55 +463,56 @@ classDiagram
             In the case of RDF data, [[SHACL]] must be used. </p>
 
 
-        <aside class="example" title="Data specification using NodeShape">
+        <aside class="example" title="Data specification using SHACL">
   <pre class="ttl">
 ex:TransportNetworkSchema
-    a              sh:NodeShape ;
+    a              p-plan:Variable ;
+    rdf:type       &lt;http://purl.org/adms/assettype/Schema&gt; ;
     rdfs:label     "Transport Network schema"@en ;
-    sh:description """A transport network consists of Nodes and Links.""" ;
-    sh:node        ex:TransportNodeShape ;
-    sh:node        ex:TransportLinkShape .
+    sh:description """A transport network consists of vertices and edges.""" ;
+    sh:node        ex:TransportVertexShape ;
+    sh:node        ex:TransportEdgeShape .
 
-ex:TransportNodeShape
+ex:TransportVertexShape
     a              sh:NodeShape ;
-    sh:targetClass ex:TransportNode ;
+    sh:targetClass ex:TransportVertex ;
     sh:property    [ sh:path     ex:geom ;
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport node must have exactly one (point) geometry (geom)." ; ] ;
-    sh:sparql      [ sh:message "Each transport node must be connected to at least one transport link." ;
+                     sh:message  "A transport vertex must have exactly one (point) geometry (geom)." ; ] ;
+    sh:sparql      [ sh:message "Each transport vertex must be connected to at least one transport Edge." ;
                      sh:select  """
             SELECT ?this
             WHERE {
-                FILTER NOT EXISTS { ?link ex:source ?this . }
-                FILTER NOT EXISTS { ?link ex:target ?this . }
+                FILTER NOT EXISTS { ?edge ex:source ?this . }
+                FILTER NOT EXISTS { ?edge ex:target ?this . }
             }
         """ ; ] .
 
-ex:TransportLinkShape
+ex:TransportEdgeShape
     a              sh:NodeShape ;
-    sh:targetClass ex:TransportLink ;
+    sh:targetClass ex:TransportEdge ;
     sh:property    [ sh:path     ex:length ;
                      sh:datatype xsd:double ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one length property." ; ] ;
+                     sh:message  "A transport edge must have exactly one length property." ; ] ;
     sh:property    [ sh:path     ex:source ;
                      sh:class    ex:TransportNode ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one source node." ; ] ;
+                     sh:message  "A transport edge must have exactly one source vertex." ; ] ;
     sh:property    [ sh:path     ex:sink ;
                      sh:class    ex:TransportNode ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one sink node." ; ] ;
+                     sh:message  "A transport edge must have exactly one sink vertex." ; ] ;
     sh:property    [ sh:path     ex:geom ;
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one (linestring) geometry (geom)." ; ] .
+                     sh:message  "A transport edge must have exactly one (linestring) geometry (geom)." ; ] .
   </pre>
         </aside>
 
@@ -522,14 +525,59 @@ ex:TransportLinkShape
 
 
     <section data-dfn-for="SimulationRun">
-        <h3>Simulation Run (prov:Activity)</h3>
-        <dfn>A simulation run ... </dfn>
+        <h3>Class: Simulation Run (prov:Activity)</h3>
+        <p>A <dfn>simulation run</dfn> is a single, complete execution of a [=simulation model=].
+            It has a run configuration that defines the starting conditions (parameters and random seeds),
+            stopping point, and input datasets.</p>
         <p>Each input and output of a simulation model
-            can have its own data specification. The data is not necessarily structured as RDF.
+            can have its own [=data specification=]. The data is not necessarily structured as RDF.
             A semantic asset [[VOCAB-ADMS]] can be used to describe the data structure.
-            In the case of RDF data, [[SHACL]] can be used. </p>
+            In the case of RDF data, [[SHACL]] must be used. </p>
+
+        <section data-dfn-for="used">
+            <h4>Property: used (prov:used)</h4>
+            <p>The <dfn>used</dfn> property of a [=simulation run=] is a reference to one or more input datasets that
+                were used.
+                The input datasets must adhere to the [=input schemas=] of the [=simulation model=].</p>
+
+
+        </section>
+
 
     </section>
+    <section data-dfn-for="Dataset">
+        <h3>Class: Dataset (dcat:Dataset)</h3>
+        <p>A <dfn>dataset</dfn> is defined in [[DCAT]] as a collection of data, published or curated by a single agent,
+            and available for access or download in one or more representations.</p>
+
+        <aside class="example" title="Input dataset">
+        <pre>
+ex:osm_tn_dataset
+    a                  dcat:Dataset ;
+    dcterms:conformsTo ex:TransportNetworkSchema ;
+    dcterms:title      "OpenStreetMap transport network"@en ;
+    dcterms:description
+                       """This dataset contains a routable transport network
+                       that was derived from OpenStreetMap data."""@en .
+        </pre>
+        </aside>
+
+
+        <section data-dfn-for="wasGeneratedBy">
+            <h4>Property: was generated by (prov:wasGeneratedBy)</h4>
+            <p>The <dfn>was generated by</dfn> property of a [=dataset=] is a reference to the [=simulation run=] that
+                generated the output dataset. </p>.
+            This output dataset must adhere to the [=output schema=] of the [=simulation model=].</p>
+        </section>
+
+        <section data-dfn-for="conformsTo">
+            <h4>Property: conforms to (dcterms:conformsTo)</h4>
+            <p>The <dfn>conforms to</dfn> property of a [=dataset=] is a reference to the [=data specification=]
+                the dataset adheres to. </p>.</p>
+        </section>
+
+    </section>
+
 </section>
 
 

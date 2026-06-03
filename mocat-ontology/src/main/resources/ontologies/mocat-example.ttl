@@ -1,6 +1,7 @@
 # =============================================================================
 # Example MoCat Simulation Model metadata  (instance data)
 # =============================================================================
+@prefix mocat:   <http://example.org/ontology/mocat#> .
 @prefix ex:      <http://example.org/data/> .
 @prefix dcat:    <http://www.w3.org/ns/dcat#> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
@@ -37,18 +38,22 @@ ex:OpenDataCatalogue
 
 # ── Simulation Model
 ex:traffic-scout
-    a                 p-plan:Plan ;
-    dcterms:title     "Traffic Scout"@en ;
-    dcterms:description
-                      """Traffic Scout combines an interactive map and a simulation tool to provide insight into local traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data, traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level (municipality, district, neighborhood)."""@en ;
-    dcterms:type      "Verkeer"@nl ;
-    dcterms:publisher ex:TML ;
-    dcterms:creator   ex:TML, ex:CEGEKA ;
-    dcterms:issued    "2020-03-15"^^xsd:date ;
-    dcterms:modified  "2020-03-15"^^xsd:date ;
-    dcat:keyword      "traffic"@en, "simulation"@en ;
-    dcat:contactPoint ex:TrafficScoutContact ;
-    dcat:distribution ex:traffic-scout-jar-dist .
+    a                   prov:Plan ;
+    dcterms:type        mocat:stimulation_model ;
+    dcterms:title       "Traffic Scout"@en ;
+    dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide insight into local
+traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data,
+traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition
+of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level
+(municipality, district, neighborhood)."""@en ;
+    dcterms:publisher   ex:TML ;
+    dcterms:creator     ex:TML, ex:CEGEKA ;
+    dcterms:issued      "2020-03-15"^^xsd:date ;
+    dcterms:modified    "2020-03-15"^^xsd:date ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
+    dcat:contactPoint   ex:TrafficScoutContact ;
+    dcat:distribution   ex:traffic-scout-jar-dist ;
+    mocat:input         ex:TransportNetworkSchema .
 
 # ── Distributions
 ex:traffic-scout-jar-dist
@@ -72,64 +77,66 @@ ex:abc123
     prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
     prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
     prov:wasAssociatedWith ex:TSSoftwareAgent ;
-    prov:wasDerivedFrom    ex:traffic-scout .
+    prov:wasDerivedFrom    ex:traffic-scout ;
+    prov:used              ex:osm_tn .
 
 
 # ── Data Specification
 
 ex:TransportNetworkSchema
-    a              sh:NodeShape ;
+    a              p-plan:Variable ;
+    rdf:type       <http://purl.org/adms/assettype/Schema> ;
     rdfs:label     "Transport Network schema"@en ;
-    sh:description """A transport network consists of Nodes and Links.""" ;
-    sh:node        ex:TransportNodeShape ;
-    sh:node        ex:TransportLinkShape .
+    sh:description """A transport network consists of vertices and edges.""" ;
+    sh:node        ex:TransportVertexShape ;
+    sh:node        ex:TransportEdgeShape .
 
-ex:TransportNodeShape
+ex:TransportVertexShape
     a              sh:NodeShape ;
-    sh:targetClass ex:TransportNode ;
+    sh:targetClass ex:TransportVertex ;
     sh:property    [ sh:path     ex:geom ;
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport node must have exactly one (point) geometry (geom)." ; ] ;
-    sh:sparql      [ sh:message "Each transport node must be connected to at least one transport link." ;
+                     sh:message  "A transport vertex must have exactly one (point) geometry (geom)." ; ] ;
+    sh:sparql      [ sh:message "Each transport vertex must be connected to at least one transport Edge." ;
                      sh:select  """
             SELECT ?this
             WHERE {
-                FILTER NOT EXISTS { ?link ex:source ?this . }
-                FILTER NOT EXISTS { ?link ex:target ?this . }
+                FILTER NOT EXISTS { ?edge ex:source ?this . }
+                FILTER NOT EXISTS { ?edge ex:target ?this . }
             }
         """ ; ] .
 
-ex:TransportLinkShape
+ex:TransportEdgeShape
     a              sh:NodeShape ;
-    sh:targetClass ex:TransportLink ;
+    sh:targetClass ex:TransportEdge ;
     sh:property    [ sh:path     ex:length ;
                      sh:datatype xsd:double ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one length property." ; ] ;
+                     sh:message  "A transport edge must have exactly one length property." ; ] ;
     sh:property    [ sh:path     ex:source ;
                      sh:class    ex:TransportNode ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one source node." ; ] ;
+                     sh:message  "A transport edge must have exactly one source vertex." ; ] ;
     sh:property    [ sh:path     ex:sink ;
                      sh:class    ex:TransportNode ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one sink node." ; ] ;
+                     sh:message  "A transport edge must have exactly one sink vertex." ; ] ;
     sh:property    [ sh:path     ex:geom ;
                      sh:datatype geo:wktLiteral ;
                      sh:minCount 1 ;
                      sh:maxCount 1 ;
-                     sh:message  "A transport link must have exactly one (linestring) geometry (geom)." ; ] .
+                     sh:message  "A transport edge must have exactly one (linestring) geometry (geom)." ; ] .
 
 
 # ── Dataset
-ex:osm_tn
-    a                  dcat:DataSet ;
-    dcterms:conformsTo ex:TransportNetworkSchema ;
-    dcterms:title      "OpenStreetMap transport network"@nl ;
-    dcterms:description
-                       "This dataset contains a routable transport network that was derived from OpenStreetMap data."@nl .
+ex:osm_tn_dataset
+    a                   dcat:Dataset ;
+    dcterms:conformsTo  ex:TransportNetworkSchema ;
+    dcterms:title       "OpenStreetMap transport network"@en ;
+    dcterms:description """This dataset contains a routable transport network
+                       that was derived from OpenStreetMap data."""@en .

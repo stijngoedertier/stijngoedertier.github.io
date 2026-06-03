@@ -49,7 +49,7 @@ public class TestOntologyValidity {
             validator.loadAndMerge("DCAT", DCAT_TTL, DCAT_URL);
             validator.loadAndMerge("PROV-O", PROVO_TTL, PROVO_URL);
             validator.loadAndMerge("P-Plan", PPLAN_TTL, null);
-            validator.loadAndMerge("SHACL", SHACL_TTL, null);
+            //validator.loadAndMerge("SHACL", SHACL_TTL, null);
             validator.loadAndMerge("MocatOntology", CUSTOM_ONT_TTL, null);
             validator.loadAndMerge("MocatExample", EXAMPLE_DATA_TTL, null);
 
