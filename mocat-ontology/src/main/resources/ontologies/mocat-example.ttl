@@ -73,12 +73,14 @@ ex:TrafficScoutContact
 # ── Simulation Run
 ex:abc123
     a                      prov:Activity ;
+    dcterms:type           ex:SimulationRun ;
     rdfs:label             "Simulation Run abc123"@en ;
     prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
     prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
     prov:wasAssociatedWith ex:TSSoftwareAgent ;
     prov:wasDerivedFrom    ex:traffic-scout ;
-    prov:used              ex:osm_tn .
+    prov:used              ex:osm_tn ;
+    prov:used              ex:run_configuration .
 
 
 # ── Data Specification
