@@ -413,7 +413,7 @@ classDiagram
 
         <aside class="example" title="Simulation Model">
   <pre class="ttl">
-ex:traffic-scoutsimu
+omg-simulationmodel:traffic-scout
     a                   prov:Plan ;
     dcterms:type        mocat:stimulation_model ;
     dcterms:title       "Traffic Scout"@en ;
@@ -428,8 +428,8 @@ of network changes) for near-synchronous operation. The TS tool focuses on appli
     dcterms:modified    "2020-03-15"^^xsd:date ;
     dcat:keyword        "traffic"@en, "simulation"@en ;
     dcat:contactPoint   ex:TrafficScoutContact ;
-    dcat:distribution   ex:traffic-scout-jar-dist ;
-    mocat:input         ex:TransportNetworkSchema .
+    dcat:distribution   omg-distribution:traffic-scout-jar-dist ;
+    mocat:input         omg-schema:TransportNetworkSchema .
   </pre>
         </aside>
 
@@ -465,15 +465,15 @@ of network changes) for near-synchronous operation. The TS tool focuses on appli
 
         <aside class="example" title="Data specification using SHACL">
   <pre class="ttl">
-ex:TransportNetworkSchema
+omg-schema:TransportNetworkSchema
     a              p-plan:Variable ;
     rdf:type       &lt;http://purl.org/adms/assettype/Schema&gt; ;
     rdfs:label     "Transport Network schema"@en ;
     sh:description """A transport network consists of vertices and edges.""" ;
-    sh:node        ex:TransportVertexShape ;
-    sh:node        ex:TransportEdgeShape .
+    sh:node        omg-shacl:TransportVertexShape ;
+    sh:node        omg-shacl:TransportEdgeShape .
 
-ex:TransportVertexShape
+omg-shacl:TransportVertexShape
     a              sh:NodeShape ;
     sh:targetClass ex:TransportVertex ;
     sh:property    [ sh:path     ex:geom ;
@@ -490,7 +490,7 @@ ex:TransportVertexShape
             }
         """ ; ] .
 
-ex:TransportEdgeShape
+omg-shacl:TransportEdgeShape
     a              sh:NodeShape ;
     sh:targetClass ex:TransportEdge ;
     sh:property    [ sh:path     ex:length ;
@@ -536,16 +536,17 @@ ex:TransportEdgeShape
 
         <aside class="example" title="Simulation run">
             <pre>
-ex:abc123
+omg-simulationrun:abc123
     a                      prov:Activity ;
     dcterms:type           ex:SimulationRun ;
     rdfs:label             "Simulation Run abc123"@en ;
     prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
     prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
     prov:wasAssociatedWith ex:TSSoftwareAgent ;
-    prov:wasDerivedFrom    ex:traffic-scout ;
-    prov:used              ex:osm_tn ;
+    prov:wasDerivedFrom    omg-simulationmodel:traffic-scout ;
+    prov:used              omg-dataset:osm_tn_dataset ;
     prov:used              ex:run_configuration .
+
             </pre>
         </aside>
 
@@ -561,7 +562,7 @@ ex:abc123
         <section data-dfn-for="wasDerivedFrom">
             <h4>Property: was derived from (prov:wasDerivedFrom)</h4>
             <p>The <dfn>was derived from</dfn> property of a [=simulation run=] relates to the [=simulation model=]
-            of which the simulation run is an execution. </p>
+                of which the simulation run is an execution. </p>
         </section>
 
 
@@ -573,12 +574,11 @@ ex:abc123
 
         <aside class="example" title="Input dataset">
         <pre>
-ex:osm_tn_dataset
-    a                  dcat:Dataset ;
-    dcterms:conformsTo ex:TransportNetworkSchema ;
-    dcterms:title      "OpenStreetMap transport network"@en ;
-    dcterms:description
-                       """This dataset contains a routable transport network
+omg-dataset:osm_tn_dataset
+    a                   dcat:Dataset ;
+    dcterms:conformsTo  omg-schema:TransportNetworkSchema ;
+    dcterms:title       "OpenStreetMap transport network"@en ;
+    dcterms:description """This dataset contains a routable transport network
                        that was derived from OpenStreetMap data."""@en .
         </pre>
         </aside>
@@ -609,8 +609,8 @@ ex:osm_tn_dataset
     <section id="metadata-creation">
         <h3>Metadata creation</h3>
 
-        <p>Departement Omgeving wants to have an overview of all simulation models that are used in its public services.
-            This includes the MER.
+        <p>Departement Omgeving wants to have an overview of all simulation models that are used in for public service
+            delivery.
         </p>
 
         <p>
@@ -674,6 +674,10 @@ flowchart LR
 
 
     <h3>Test interoperability of input data</h3>
+
+
+    <h3>Start a simulation run via a universal interface</h3>
+
 </section>
 
 </body>

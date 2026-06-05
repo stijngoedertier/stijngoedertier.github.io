@@ -1,43 +1,56 @@
 # =============================================================================
 # Example MoCat Simulation Model metadata  (instance data)
 # =============================================================================
-@prefix mocat:   <http://example.org/ontology/mocat#> .
-@prefix ex:      <http://example.org/data/> .
-@prefix dcat:    <http://www.w3.org/ns/dcat#> .
-@prefix prov:    <http://www.w3.org/ns/prov#> .
-@prefix p-plan:  <http://purl.org/net/p-plan#> .
-@prefix sh:      <http://www.w3.org/ns/shacl#> .
-@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
-@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
-@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix vcard:   <http://www.w3.org/2006/vcard/ns#> .
-@prefix geo:     <http://www.opengis.net/ont/geosparql#> .
+
+
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix ex:                  <http://example.org/data/> .
+@prefix omg:                 <https://data.omgeving.vlaanderen.be/id/> .
+@prefix omg-dataset:         <https://data.omgeving.vlaanderen.be/id/dataset/> .
+@prefix omg-distribution:    <https://data.omgeving.vlaanderen.be/id/distribution/> .
+@prefix omg-catalog:         <https://data.omgeving.vlaanderen.be/id/catalog/> .
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-simulationrun:   <https://data.omgeving.vlaanderen.be/id/simulationrun/> .
+@prefix omg-shacl:           <https://data.omgeving.vlaanderen.be/id/shacl/> .
+@prefix omg-schema:          <https://data.omgeving.vlaanderen.be/id/schema/> .
+@prefix dcat:                <http://www.w3.org/ns/dcat#> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix p-plan:              <http://purl.org/net/p-plan#> .
+@prefix sh:                  <http://www.w3.org/ns/shacl#> .
+@prefix rdf:                 <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix foaf:                <http://xmlns.com/foaf/0.1/> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:                <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vcard:               <http://www.w3.org/2006/vcard/ns#> .
+@prefix geo:                 <http://www.opengis.net/ont/geosparql#> .
 
 
 # ── Publisher
 ex:TML
-    a         foaf:Organization, prov:Agent ;
-    foaf:name "Transport and Mobility Leuven"@en .
+    a          foaf:Organization, prov:Agent ;
+    rdfs:label "Transport and Mobility Leuven"@en ;
+    foaf:name  "Transport and Mobility Leuven"@en .
 
 ex:OMG
-    a         foaf:Organization, prov:Agent ;
-    foaf:name "Departement Omgeving"@nl .
+    a          foaf:Organization, prov:Agent ;
+    rdfs:label "Departement Omgeving"@nl ;
+    foaf:name  "Departement Omgeving"@nl .
 
 ex:CEGEKA
-    a         foaf:Organization, prov:Agent ;
-    foaf:name "CEGEKA"@en .
+    a          foaf:Organization, prov:Agent ;
+    rdfs:label "CEGEKA"@en ;
+    foaf:name  "CEGEKA"@en .
 
 # ── Catalogue
-ex:OpenDataCatalogue
+omg-catalog:OpenDataCatalogue
     a                 dcat:Catalog ;
     dcterms:title     "Catalog of Simulation Models"@en ;
     dcterms:publisher ex:OMG ;
-    dcat:dataset      ex:traffic-scout .
+    dcat:dataset      omg-simulationmodel:traffic-scout .
 
 # ── Simulation Model
-ex:traffic-scout
+omg-simulationmodel:traffic-scout
     a                   prov:Plan ;
     dcterms:type        mocat:stimulation_model ;
     dcterms:title       "Traffic Scout"@en ;
@@ -52,11 +65,11 @@ of network changes) for near-synchronous operation. The TS tool focuses on appli
     dcterms:modified    "2020-03-15"^^xsd:date ;
     dcat:keyword        "traffic"@en, "simulation"@en ;
     dcat:contactPoint   ex:TrafficScoutContact ;
-    dcat:distribution   ex:traffic-scout-jar-dist ;
-    mocat:input         ex:TransportNetworkSchema .
+    dcat:distribution   omg-distribution:traffic-scout-jar-dist ;
+    mocat:input         omg-schema:TransportNetworkSchema .
 
 # ── Distributions
-ex:traffic-scout-jar-dist
+omg-distribution:traffic-scout-jar-dist
     a                dcat:Distribution ;
     dcat:accessURL   "<<Link>>" ;
     dcat:downloadURL <http://example.org/software/traffic-scout.jar> ;
@@ -71,29 +84,29 @@ ex:TrafficScoutContact
 
 
 # ── Simulation Run
-ex:abc123
+omg-simulationrun:abc123
     a                      prov:Activity ;
     dcterms:type           ex:SimulationRun ;
     rdfs:label             "Simulation Run abc123"@en ;
     prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
     prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
     prov:wasAssociatedWith ex:TSSoftwareAgent ;
-    prov:wasDerivedFrom    ex:traffic-scout ;
-    prov:used              ex:osm_tn ;
+    prov:wasDerivedFrom    omg-simulationmodel:traffic-scout ;
+    prov:used              omg-dataset:osm_tn_dataset ;
     prov:used              ex:run_configuration .
 
 
 # ── Data Specification
 
-ex:TransportNetworkSchema
+omg-schema:TransportNetworkSchema
     a              p-plan:Variable ;
     rdf:type       <http://purl.org/adms/assettype/Schema> ;
     rdfs:label     "Transport Network schema"@en ;
     sh:description """A transport network consists of vertices and edges.""" ;
-    sh:node        ex:TransportVertexShape ;
-    sh:node        ex:TransportEdgeShape .
+    sh:node        omg-shacl:TransportVertexShape ;
+    sh:node        omg-shacl:TransportEdgeShape .
 
-ex:TransportVertexShape
+omg-shacl:TransportVertexShape
     a              sh:NodeShape ;
     sh:targetClass ex:TransportVertex ;
     sh:property    [ sh:path     ex:geom ;
@@ -110,7 +123,7 @@ ex:TransportVertexShape
             }
         """ ; ] .
 
-ex:TransportEdgeShape
+omg-shacl:TransportEdgeShape
     a              sh:NodeShape ;
     sh:targetClass ex:TransportEdge ;
     sh:property    [ sh:path     ex:length ;
@@ -136,9 +149,9 @@ ex:TransportEdgeShape
 
 
 # ── Dataset
-ex:osm_tn_dataset
+omg-dataset:osm_tn_dataset
     a                   dcat:Dataset ;
-    dcterms:conformsTo  ex:TransportNetworkSchema ;
+    dcterms:conformsTo  omg-schema:TransportNetworkSchema ;
     dcterms:title       "OpenStreetMap transport network"@en ;
     dcterms:description """This dataset contains a routable transport network
                        that was derived from OpenStreetMap data."""@en .
