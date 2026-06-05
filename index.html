@@ -622,6 +622,21 @@ omg-dataset:osm_tn_dataset
             The triple store is schema-free and enables various use cases.
             Use case 12 in WP4 of the [[X-CITE-P-PLAN]] citiverse project.
         </p>
+        <p>
+            Metadata will be available on the Linked Data service of Departement Omgeving at
+            <a href="https://data.omgeving.vlaanderen.be/#sparqlForm">https://data.omgeving.vlaanderen.be/sparql</a>.
+            The metadata can there be explored from a plain SPARQL interface.
+
+        </p>
+
+        <aside class="example" title="SPARQL query">
+        <pre>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT ?s ?p ?o
+WHERE {?s a prov:Plan.
+?s ?p ?o}
+        </pre>
+        </aside>
 
         <figure>
   <pre class="diagram mermaid">---
