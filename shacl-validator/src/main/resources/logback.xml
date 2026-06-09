@@ -1,0 +1,17 @@
+<configuration>
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss} [%level] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Suppress noisy Jena / TopBraid output by default -->
+    <logger name="org.apache.jena"  level="WARN"/>
+    <logger name="org.topbraid"     level="WARN"/>
+    <logger name="com.shaclvalidator" level="INFO"/>
+
+    <root level="WARN">
+        <appender-ref ref="STDERR"/>
+    </root>
+</configuration>

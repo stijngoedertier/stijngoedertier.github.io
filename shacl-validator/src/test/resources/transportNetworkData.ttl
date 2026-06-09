@@ -1,0 +1,80 @@
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix ex:                  <http://example.org/data/> .
+@prefix omg:                 <https://data.omgeving.vlaanderen.be/id/> .
+@prefix omg-dataset:         <https://data.omgeving.vlaanderen.be/id/dataset/> .
+@prefix omg-distribution:    <https://data.omgeving.vlaanderen.be/id/distribution/> .
+@prefix omg-catalog:         <https://data.omgeving.vlaanderen.be/id/catalog/> .
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-simulationrun:   <https://data.omgeving.vlaanderen.be/id/simulationrun/> .
+@prefix omg-shacl:           <https://data.omgeving.vlaanderen.be/id/shacl/> .
+@prefix omg-schema:          <https://data.omgeving.vlaanderen.be/id/schema/> .
+@prefix dcat:                <http://www.w3.org/ns/dcat#> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix p-plan:              <http://purl.org/net/p-plan#> .
+@prefix sh:                  <http://www.w3.org/ns/shacl#> .
+@prefix rdf:                 <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix foaf:                <http://xmlns.com/foaf/0.1/> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:                <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vcard:               <http://www.w3.org/2006/vcard/ns#> .
+@prefix geo:                 <http://www.opengis.net/ont/geosparql#> .
+
+#################################################################
+# Example classes (optional, but useful for clarity)
+#################################################################
+
+ex:TransportVertex
+    a rdfs:Class .
+
+ex:TransportEdge
+    a rdfs:Class .
+
+ex:TransportNode
+    a rdfs:Class .
+
+#################################################################
+# Transport vertices – conform to omg-shacl:TransportVertexShape
+#################################################################
+
+ex:vertexA
+    a       ex:TransportVertex, ex:TransportNode ;
+    ex:geom "POINT (0 0)"^^geo:wktLiteral .
+
+ex:vertexB
+    a       ex:TransportVertex, ex:TransportNode ;
+    ex:geom "POINT (1 0)"^^geo:wktLiteral .
+
+ex:vertexC
+    a       ex:TransportVertex, ex:TransportNode ;
+    ex:geom "POINT (1 1)"^^geo:wktLiteral .
+
+#################################################################
+# Transport edges – conform to omg-shacl:TransportEdgeShape
+# and connect every vertex to at least one edge
+#################################################################
+
+ex:edge1
+    a         ex:TransportEdge ;
+    ex:length "100.0"^^xsd:double ;
+    ex:source ex:vertexA ;
+    ex:sink   ex:vertexB ;
+    ex:sink   ex:vertexC ;
+    ex:geom   "LINESTRING (0 0, 1 0)"^^geo:wktLiteral .
+
+ex:edge2
+    a         ex:TransportEdge ;
+    #ex:length "120.5"^^xsd:double ;
+    ex:source ex:vertexB ;
+    ex:sink   ex:vertexC ;
+    ex:target ex:vertexC ;
+    ex:geom   "LINESTRING (1 0, 1 1)"^^geo:wktLiteral .
+
+# Optional extra edge so vertexA is also a target of some edge
+ex:edge3
+    a         ex:TransportEdge ;
+    ex:length "95.3"^^xsd:double ;
+    ex:source ex:vertexC ;
+    ex:sink   ex:vertexA ;
+    ex:target ex:vertexA ;
+    ex:geom   "LINESTRING (1 1, 0 0)"^^geo:wktLiteral .
