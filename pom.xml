@@ -19,6 +19,7 @@
     <modules>
         <module>owl-validator</module>
         <module>mocat-ontology</module>
+        <module>shacl-validator</module>
     </modules>
 
 
