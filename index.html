@@ -286,10 +286,10 @@ classDiagram
     Dataset --> DataSpecification : dct conformsTo
     DataSpecification --> NodeShape: sh node
     NodeShape --> PropertyShape: sh property
-    Dataset --> SimulationModel: prov wasDerivedFrom
+    Dataset --> Dataset: prov wasDerivedFrom
     SimulationRun --> Dataset : prov used
     Dataset --> SimulationRun : prov wasGeneratedBy
-    SimulationRun --> SimulationModel: prov wasDerivedFrom
+    SimulationRun --> SimulationModel: sosa usedProcedure
     SimulationRun --> Agent : prov wasAssociatedWith
 
   </pre>
@@ -610,7 +610,7 @@ omg-dataset:osm_tn_dataset
         <h3>Metadata creation</h3>
 
         <p>Departement Omgeving wants to have an overview of all simulation models that are used in for public service
-            delivery.
+            delivery. Simulation models are mainly used for environmental impact assessment.
         </p>
 
         <p>
