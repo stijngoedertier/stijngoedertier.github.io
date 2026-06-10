@@ -1,0 +1,23 @@
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-schema:          <https://data.omgeving.vlaanderen.be/id/schema/> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix dcat:                <http://www.w3.org/ns/dcat#> .
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:                  <http://example.org/data/> .
+
+omg-simulationmodel:traffic-scout
+    a                   prov:Plan ;
+    dcterms:title       "Traffic Scout"@en ;
+    dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide insight into local
+traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data,
+traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition
+of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level
+(municipality, district, neighborhood)."""@en ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
+    dcterms:publisher   ex:TML ;
+    dcterms:issued      "2020-03-15"^^xsd:date ;
+    dcterms:modified    "2020-03-15"^^xsd:date ;
+    mocat:input         omg-schema:TransportNetworkSchema ;
+    mocat:output        omg-schema:SimulationOutputSchema .

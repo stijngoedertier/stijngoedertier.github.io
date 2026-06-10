@@ -47,6 +47,24 @@ mocat:SimulationRun
 
 # ── Object Properties
 
+mocat:model
+    a           owl:ObjectProperty ;
+    rdfs:label  "model"@en ;
+    rdfs:domain dcat:Catalog ;
+    rdfs:range  mocat:SimulationModel .
+
+mocat:input
+    a           owl:ObjectProperty ;
+    rdfs:label  "input"@en ;
+    rdfs:domain mocat:SimulationModel ;
+    rdfs:range  mocat:DataSpecification .
+
+mocat:output
+    a           owl:ObjectProperty ;
+    rdfs:label  "output"@en ;
+    rdfs:domain mocat:SimulationModel ;
+    rdfs:range  mocat:DataSpecification .
+
 mocat:conformsToSpecification
     a                  owl:ObjectProperty ;
     rdfs:label         "conforms to specification"@en ;

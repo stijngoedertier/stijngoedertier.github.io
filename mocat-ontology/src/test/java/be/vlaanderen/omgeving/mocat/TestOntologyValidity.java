@@ -29,7 +29,7 @@ public class TestOntologyValidity {
     private static final String PPLAN_TTL = "ontologies/p-plan.owl";
     private static final String SHACL_TTL = "ontologies/shacl.ttl";
     private static final String CUSTOM_ONT_TTL = "ontologies/mocat-ontology.ttl";
-    private static final String EXAMPLE_DATA_TTL = "ontologies/mocat-example.ttl";
+    private static final String EXAMPLE_DATA_TTL = "examples/mocat-example.ttl";
 
     // ── Remote fallback URLs (used when local copies are absent) ─────────────
     private static final String DCAT_URL = "https://www.w3.org/ns/dcat3.ttl";
