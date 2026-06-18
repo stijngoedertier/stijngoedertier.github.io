@@ -86,11 +86,6 @@
                                 <!-- Required by Jena to merge service files -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <!-- Merge duplicate XML schemas -->
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.handlers</resource>
-                                </transformer>
                             </transformers>
                             <filters>
                                 <filter>
