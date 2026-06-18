@@ -152,13 +152,3 @@ classDiagram
     SimulationRun --> Agent : prov wasAssociatedWith
 ```
 
-## Legenda
-
-| Symbool | Betekenis |
-|---------|-----------|
-| `--|>` | `rdfs:subClassOf` |
-| `-->` met multiplicity | object property of `owl:someValuesFrom`-restrictie |
-| `[1..*]` bij attribuut | `owl:minCardinality 1` (data property) |
-| `"1" --> "1..*"` | `owl:someValuesFrom` (minstens één waarde van het opgegeven type) |
-| `note` | `owl:AllDisjointClasses` — de vier klassen zijn onderling disjunct |
-| `mocat_x` in label | notatie voor `mocat:x` (`:` niet toegestaan in Mermaid relatielabels) |
