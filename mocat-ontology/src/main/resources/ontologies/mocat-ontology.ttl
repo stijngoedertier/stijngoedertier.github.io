@@ -1,3 +1,4 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 # =============================================================================
 # MoCAT Ontology  (under development)
 # Uses DCAT, PROV-O and P-PLAN to represent simulation model concepts.
@@ -81,7 +82,12 @@ mocat:DataSpecification
     rdfs:comment    "A specification of the data structure of an input or output dataset."@en ;
     rdfs:subClassOf p-plan:Variable ;
     rdfs:subClassOf dcat:Resource ;
-    rdfs:subClassOf prov:Entity .
+    rdfs:subClassOf [
+                        a                   owl:Restriction ;
+                        owl:onProperty      sh:node ;
+                        owl:someValuesFrom  sh:NodeShape
+                    ] .
+
 
 mocat:SimulationRun
     a               owl:Class ;
