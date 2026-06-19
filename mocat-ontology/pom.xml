@@ -18,6 +18,27 @@
         A few axioms illustrating the ontology.
     </description>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Pin RDF4J to 5.0.2 — OWLAPI 5.5.1 compiled against it (BooleanRioSetting).
+                 HermiT/owlapi-tools pull in 4.2.1 which has RioSetting<Boolean> instead,
+                 causing NoSuchFieldError on BasicParserSettings.VERIFY_DATATYPE_VALUES. -->
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-model</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-model-api</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-model-vocabulary</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-rio-api</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-rio-turtle</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-rio-jsonld</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-annotation</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-exception</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-io</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-iterator</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-text</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-util</artifactId><version>5.0.2</version></dependency>
+            <dependency><groupId>org.eclipse.rdf4j</groupId><artifactId>rdf4j-common-xml</artifactId><version>5.0.2</version></dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- ── Logging ──────────────────────────────────────────────── -->
@@ -50,7 +71,69 @@
             <version>5.11.3</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.11.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>be.vlaanderen.omgeving</groupId>
+            <artifactId>rdf-validator</artifactId>
+            <version>0.3.0</version>
+        </dependency>
+
+        <!-- ── Scala ─────────────────────────────────────────────── -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.12.18</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.12</artifactId>
+            <version>3.2.18</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.9.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>2.12.18</scalaVersion>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <version>2.2.0</version>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

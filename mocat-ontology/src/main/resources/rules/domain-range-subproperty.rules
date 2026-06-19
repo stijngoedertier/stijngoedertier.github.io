@@ -1,0 +1,15 @@
+# RDFS domain inference: als ?p rdfs:domain ?c, en ?x gebruikt ?p, dan is ?x van type ?c
+[domainRule: (?p rdfs:domain ?c), (?x ?p ?y) -> (?x rdf:type ?c)]
+
+# RDFS range inference: als ?p rdfs:range ?c, en ?p wordt gebruikt met waarde ?y, dan is ?y van type ?c
+[rangeRule: (?p rdfs:range ?c), (?x ?p ?y) -> (?y rdf:type ?c)]
+
+# rdfs:subPropertyOf: gebruik van ?p impliceert ook gebruik van de superproperty ?q
+[subPropertyRule: (?p rdfs:subPropertyOf ?q), (?x ?p ?y) -> (?x ?q ?y)]
+
+# rdfs:subClassOf: instantie van subklasse is ook instantie van superklasse
+[subClassRule: (?y rdfs:subClassOf ?z), (?x rdf:type ?y) -> (?x rdf:type ?z)]
+
+# owl:inverseOf: als ?p inverse is van ?q, geldt de relatie in beide richtingen
+[inversePropertyRule:  (?p owl:inverseOf ?q), (?x ?p ?y) -> (?y ?q ?x)]
+[inversePropertyRule2: (?p owl:inverseOf ?q), (?x ?q ?y) -> (?y ?p ?x)]

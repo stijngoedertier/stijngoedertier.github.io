@@ -1,6 +1,7 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 # =============================================================================
 # MoCAT Ontology  (under development)
-# Uses DCAT and PROV-O to represent simulation model concepts.
+# Uses DCAT, PROV-O and P-PLAN to represent simulation model concepts.
 # =============================================================================
 @prefix mocat:   <http://example.org/ontology/mocat#> .
 @prefix dcat:    <http://www.w3.org/ns/dcat#> .
@@ -11,6 +12,11 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf:    <http://xmlns.com/foaf/0.1/> .
+@prefix spdx-sw:             <https://spdx.org/rdf/3.0.1/terms/Software/> .
+@prefix spdx-purpose:        <https://spdx.org/rdf/3.0.1/terms/Software/SoftwarePurpose/> .
+@prefix spdx-core:           <https://spdx.org/rdf/3.0.1/terms/Core/> .
+@prefix spdx-core-algo:      <https://spdx.org/rdf/3.0.1/terms/Core/HashAlgorithm/> .
 
 
 # ── Ontology
@@ -22,35 +28,113 @@
     owl:imports  <http://www.w3.org/ns/dcat> ;
     owl:imports  <http://www.w3.org/ns/prov-o#> .
 
+
 # ── Classes
 
 mocat:SimulationModel
     a               owl:Class ;
     rdfs:label      "Simulation Model"@en ;
     rdfs:subClassOf prov:Plan ;
-    rdfs:subClassOf p-plan:Plan .
+    rdfs:subClassOf p-plan:Plan ;
+    rdfs:subClassOf p-plan:Step ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      dcterms:title ;
+        owl:minCardinality  "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      mocat:input ;
+        owl:someValuesFrom  mocat:DataSpecification
+    ] ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      mocat:output ;
+        owl:someValuesFrom  mocat:DataSpecification
+    ] .
+
+mocat:Agent
+    a               owl:Class ;
+    rdfs:label      "Agent"@en ;
+    rdfs:comment    "The software package that implements and executes a SimulationModel."@en ;
+    rdfs:subClassOf prov:SoftwareAgent ;
+    rdfs:subClassOf spdx-sw:Package ;
+    rdfs:subClassOf [
+                        a                   owl:Restriction ;
+                        owl:onProperty      spdx-sw:primaryPurpose ;
+                        owl:someValuesFrom  spdx-sw:SoftwarePurpose
+                    ] ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      foaf:name ;
+        owl:minCardinality  "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      spdx-sw:packageVersion ;
+        owl:minCardinality  "1"^^xsd:nonNegativeInteger
+    ] .
+
 
 mocat:DataSpecification
     a               owl:Class ;
     rdfs:label      "Data Specification"@en ;
     rdfs:comment    "A specification of the data structure of an input or output dataset."@en ;
+    rdfs:subClassOf p-plan:Variable ;
     rdfs:subClassOf dcat:Resource ;
-    rdfs:subClassOf prov:Entity .
+    rdfs:subClassOf [
+                        a                   owl:Restriction ;
+                        owl:onProperty      sh:node ;
+                        owl:someValuesFrom  sh:NodeShape
+                    ] .
+
 
 mocat:SimulationRun
     a               owl:Class ;
     rdfs:label      "Simulation Run"@en ;
     rdfs:comment    "Represents the (past) activity or running a simulation once with specific run configuration parameters, input and output datasets."@en ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:subClassOf p-plan:Activity ;
     rdfs:subClassOf dcat:Resource ;
-    rdfs:subClassOf prov:Activity .
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      p-plan:correspondsToStep ;
+        owl:someValuesFrom  mocat:SimulationModel
+    ] ;
+    rdfs:subClassOf [
+        a                   owl:Restriction ;
+        owl:onProperty      prov:wasAssociatedWith ;
+        owl:someValuesFrom  mocat:Agent
+    ] .
 
 
 # ── Object Properties
+
+mocat:model
+    a           owl:ObjectProperty ;
+    rdfs:label  "model"@en ;
+    rdfs:domain dcat:Catalog ;
+    rdfs:range  mocat:SimulationModel .
+
+mocat:input
+    a                  owl:ObjectProperty ;
+    rdfs:label         "input"@en ;
+    rdfs:subPropertyOf p-plan:hasInputVar ;
+    rdfs:domain        mocat:SimulationModel ;
+    rdfs:range         mocat:DataSpecification .
+
+mocat:output
+    a                  owl:ObjectProperty ;
+    rdfs:label         "output"@en ;
+    rdfs:subPropertyOf p-plan:hasOutputVar ;
+    rdfs:domain        mocat:SimulationModel ;
+    rdfs:range         mocat:DataSpecification .
 
 mocat:conformsToSpecification
     a                  owl:ObjectProperty ;
     rdfs:label         "conforms to specification"@en ;
     rdfs:subPropertyOf dcterms:conformsTo ;
+    rdfs:subPropertyOf p-plan:correspondsToVariable ;
     rdfs:domain        dcat:Dataset ;
     rdfs:range         mocat:DataSpecification .
 
@@ -61,4 +145,4 @@ mocat:conformsToSpecification
 # ── Disjointness constraints
 []
     a           owl:AllDisjointClasses ;
-    owl:members ( mocat:DataSpecification dcat:Dataset mocat:SimulationRun mocat:SimulationModel  ) .
+    owl:members ( mocat:DataSpecification dcat:Dataset mocat:SimulationRun mocat:SimulationModel ) .

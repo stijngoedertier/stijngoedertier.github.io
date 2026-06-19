@@ -1,0 +1,236 @@
+# =============================================================================
+# MoCAT complete example — Traffic Scout end-to-end scenario
+#
+# Three-layer structure:
+#   PLAN      : SimulationModel + DataSpecification (SHACL shapes)
+#   EXECUTION : SimulationRun + SoftwareAgent
+#   DATA      : dcat:Dataset (input) + dcat:Dataset (output) + Distributions
+# =============================================================================
+
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-simulationrun:   <https://data.omgeving.vlaanderen.be/id/simulationrun/> .
+@prefix omg-dataset:         <https://data.omgeving.vlaanderen.be/id/dataset/> .
+@prefix omg-distribution:    <https://data.omgeving.vlaanderen.be/id/distribution/> .
+@prefix omg-schema:          <https://data.omgeving.vlaanderen.be/id/schema/> .
+@prefix omg-shacl:           <https://data.omgeving.vlaanderen.be/id/shacl/> .
+@prefix omg-catalog:         <https://data.omgeving.vlaanderen.be/id/catalog/> .
+@prefix omg-agent:           <https://data.omgeving.vlaanderen.be/id/agent/> .
+@prefix dcat:                <http://www.w3.org/ns/dcat#> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix foaf:                <http://xmlns.com/foaf/0.1/> .
+@prefix geo:                 <http://www.opengis.net/ont/geosparql#> .
+@prefix p-plan:              <http://purl.org/net/p-plan#> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix rdf:                 <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh:                  <http://www.w3.org/ns/shacl#> .
+@prefix sosa:                <http://www.w3.org/ns/sosa/> .
+@prefix spdx-sw:             <https://spdx.org/rdf/3.0.1/terms/Software/> .
+@prefix spdx-purpose:        <https://spdx.org/rdf/3.0.1/terms/Software/SoftwarePurpose/> .
+@prefix spdx-core:           <https://spdx.org/rdf/3.0.1/terms/Core/> .
+@prefix spdx-core-algo:      <https://spdx.org/rdf/3.0.1/terms/Core/HashAlgorithm/> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:                  <http://example.org/data/> .
+
+
+# ── Organisations ─────────────────────────────────────────────────────────────
+
+ex:TML
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Transport and Mobility Leuven"@en .
+
+ex:OMG
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Departement Omgeving"@nl .
+
+
+# ── Catalogue ─────────────────────────────────────────────────────────────────
+
+omg-catalog:OpenDataCatalogue
+    a                 dcat:Catalog ;
+    dcterms:title     "Catalogue of Simulation Models"@en ;
+    dcterms:publisher ex:OMG ;
+    mocat:model       omg-simulationmodel:traffic-scout ;
+    dcat:dataset      omg-dataset:ghent-network-2026 ;
+    dcat:dataset      omg-dataset:traffic-scout-output-run-001 .
+
+
+# ── PLAN LAYER ────────────────────────────────────────────────────────────────
+
+omg-simulationmodel:traffic-scout
+    a                   mocat:SimulationModel, prov:Plan ;
+    dcterms:title       "Traffic Scout"@en ;
+    dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide
+insight into local traffic flows based on, among other things, local traffic sensors. The technology
+is based on Telraam data, traffic indicators, geodata, and OpenStreetMap. The TS model supports model
+calculations (including the addition of network changes) for near-synchronous operation. The TS tool
+focuses on applications at the meso-level (municipality, district, neighborhood)."""@en ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
+    dcterms:publisher   ex:TML ;
+    dcterms:issued      "2020-03-15"^^xsd:date ;
+    dcterms:modified    "2024-11-01"^^xsd:date ;
+    mocat:input         omg-schema:TransportNetworkSchema ;
+    mocat:output        omg-schema:SimulationOutputSchema .
+
+
+# ── DataSpecifications (p-plan:Variable) ─────────────────────────────────────
+
+omg-schema:TransportNetworkSchema
+    a                   mocat:DataSpecification ;
+    dcterms:title       "Transport Network Schema"@en ;
+    dcterms:description "A transport network consists of vertices and edges."@en ;
+    sh:node             omg-shacl:TransportVertexShape ;
+    sh:node             omg-shacl:TransportEdgeShape .
+
+omg-schema:SimulationOutputSchema
+    a                   mocat:DataSpecification ;
+    dcterms:title       "Simulation Output Schema"@en ;
+    dcterms:description "Simulated traffic flow counts per road segment."@en ;
+    sh:node             omg-shacl:SimulationOutputShape .
+
+
+# ── SHACL NodeShapes ──────────────────────────────────────────────────────────
+
+omg-shacl:TransportVertexShape
+    a              sh:NodeShape ;
+    sh:name        "Transport Vertex"@en ;
+    sh:description "A vertex (node) in the transport network."@en ;
+    sh:targetClass ex:TransportVertex ;
+    sh:property    [ sh:path        ex:geom ;
+                     sh:name        "geometry"@en ;
+                     sh:description "Point geometry of the vertex."@en ;
+                     sh:datatype    geo:wktLiteral ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport vertex must have exactly one point geometry." ] .
+
+omg-shacl:TransportEdgeShape
+    a              sh:NodeShape ;
+    sh:name        "Transport Edge"@en ;
+    sh:description "An edge (link) in the transport network."@en ;
+    sh:targetClass ex:TransportEdge ;
+    sh:property    [ sh:path        ex:length ;
+                     sh:name        "length"@en ;
+                     sh:description "Length of the edge in metres."@en ;
+                     sh:datatype    xsd:double ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one length property." ] ;
+    sh:property    [ sh:path        ex:source ;
+                     sh:name        "source vertex"@en ;
+                     sh:description "Start vertex of the edge."@en ;
+                     sh:class       ex:TransportVertex ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one source vertex." ] ;
+    sh:property    [ sh:path        ex:sink ;
+                     sh:name        "sink vertex"@en ;
+                     sh:description "End vertex of the edge."@en ;
+                     sh:class       ex:TransportVertex ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one sink vertex." ] ;
+    sh:property    [ sh:path        ex:geom ;
+                     sh:name        "geometry"@en ;
+                     sh:description "Linestring geometry of the edge."@en ;
+                     sh:datatype    geo:wktLiteral ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one linestring geometry." ] .
+
+omg-shacl:SimulationOutputShape
+    a              sh:NodeShape ;
+    sh:name        "Traffic Flow Result"@en ;
+    sh:description "Simulated traffic count for one road segment."@en ;
+    sh:targetClass ex:TrafficFlowResult ;
+    sh:property    [ sh:path        ex:roadSegmentId ;
+                     sh:name        "road segment id"@en ;
+                     sh:description "Identifier of the road segment."@en ;
+                     sh:datatype    xsd:string ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A traffic flow result must reference exactly one road segment." ] ;
+    sh:property    [ sh:path        ex:vehicleCount ;
+                     sh:name        "vehicle count"@en ;
+                     sh:description "Simulated number of vehicles per hour."@en ;
+                     sh:datatype    xsd:integer ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A traffic flow result must have exactly one vehicle count." ] .
+
+
+# ── EXECUTION LAYER ───────────────────────────────────────────────────────────
+
+omg-agent:traffic-scout-v2-3
+    a                        mocat:Agent ;
+    foaf:name                "Traffic Scout"@en ;
+    spdx-sw:packageVersion   "2.3.0" ;
+    spdx-sw:packageUrl       "pkg:github/tml-leuven/traffic-scout@2.3.0"^^xsd:anyURI ;
+    spdx-sw:downloadLocation <https://github.com/tml-leuven/traffic-scout/releases/tag/v2.3.0> ;
+    spdx-sw:homePage         <https://github.com/tml-leuven/traffic-scout> ;
+    spdx-sw:primaryPurpose   spdx-purpose:application .
+
+spdx-purpose:application
+    a    spdx-sw:SoftwarePurpose .
+
+omg-simulationrun:run-001
+    a                        mocat:SimulationRun, prov:Activity ;
+    dcterms:title            "Traffic Scout run 001 — Ghent 2026-06-01"@en ;
+    dcterms:description      "Traffic Scout simulation run over the Ghent transport network."@en ;
+    p-plan:correspondsToStep omg-simulationmodel:traffic-scout ;
+    sosa:usedProcedure       omg-simulationmodel:traffic-scout ;
+    prov:wasAssociatedWith   omg-agent:traffic-scout-v2-3 ;
+    prov:startedAtTime       "2026-06-01T00:00:00Z"^^xsd:dateTime ;
+    prov:endedAtTime         "2026-06-01T00:12:59Z"^^xsd:dateTime ;
+    prov:used                omg-dataset:ghent-network-2026 ;
+    prov:generated           omg-dataset:traffic-scout-output-run-001 .
+
+
+# ── DATA LAYER ────────────────────────────────────────────────────────────────
+
+# Input dataset — used by the run, never generated by it
+omg-dataset:ghent-network-2026
+    a                              dcat:Dataset ;
+    dcterms:title                  "Ghent transport network 2026"@en ;
+    dcterms:description            "Routable transport network derived from OpenStreetMap data for the Ghent region."@en ;
+    dcat:keyword                   "transport network"@en, "Ghent"@en, "OpenStreetMap"@en ;
+    dcat:theme                     <http://publications.europa.eu/resource/authority/data-theme/TRAN> ;
+    dcterms:publisher              ex:OMG ;
+    dcterms:issued                 "2024-01-01"^^xsd:date ;
+    dcterms:modified               "2026-05-15"^^xsd:date ;
+    dcterms:hasVersion             "3.0" ;
+    p-plan:correspondsToVariable   omg-schema:TransportNetworkSchema ;
+    mocat:conformsToSpecification  omg-schema:TransportNetworkSchema ;
+    dcat:distribution              omg-distribution:ghent-network-2026-geojson ;
+    spdx-core:verifiedUsing        [
+        a                          spdx-core:Hash ;
+        spdx-core:hashValue        "e3b0c44298fc1c149afbf4c8996fb924"^^xsd:string ;
+        spdx-core:algorithm        spdx-core-algo:sha256
+    ] .
+
+omg-distribution:ghent-network-2026-geojson
+    a                dcat:Distribution ;
+    dcterms:title    "Ghent transport network GeoJSON"@en ;
+    dcterms:format   <http://publications.europa.eu/resource/authority/file-type/GEOJSON> ;
+    dcat:accessURL   <https://data.omgeving.vlaanderen.be/id/dataset/ghent-network-2026> ;
+    dcat:downloadURL <https://data.omgeving.vlaanderen.be/files/ghent-network-2026.geojson> .
+
+# Output dataset — generated by the run, never used as input of the same run
+omg-dataset:traffic-scout-output-run-001
+    a                              dcat:Dataset ;
+    dcterms:title                  "Traffic Scout simulation output — Ghent 2026-06-01"@en ;
+    dcterms:description            "Simulated traffic flow counts per road segment for Ghent on 2026-06-01."@en ;
+    dcat:keyword                   "traffic flow"@en, "simulation"@en, "Ghent"@en ;
+    dcat:theme                     <http://publications.europa.eu/resource/authority/data-theme/TRAN> ;
+    dcterms:publisher              ex:OMG ;
+    dcterms:issued                 "2026-06-01"^^xsd:date ;
+    p-plan:correspondsToVariable   omg-schema:SimulationOutputSchema ;
+    mocat:conformsToSpecification  omg-schema:SimulationOutputSchema ;
+    dcat:distribution              omg-distribution:traffic-scout-output-run-001-csv .
+
+omg-distribution:traffic-scout-output-run-001-csv
+    a                dcat:Distribution ;
+    dcterms:title    "Traffic Scout output CSV"@en ;
+    dcterms:format   <http://publications.europa.eu/resource/authority/file-type/CSV> ;
+    dcat:accessURL   <https://data.omgeving.vlaanderen.be/id/dataset/traffic-scout-output-run-001> ;
+    dcat:downloadURL <https://data.omgeving.vlaanderen.be/files/traffic-scout-output-run-001.csv> .

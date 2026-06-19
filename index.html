@@ -284,6 +284,7 @@ classDiagram
     SimulationModel --> DataSpecification : mocat input
     SimulationModel -->  DataSpecification : output
     Dataset --> DataSpecification : dct conformsTo
+    Dataset --> DataSpecification : p-plan correspondsToVariable
     DataSpecification --> NodeShape: sh node
     NodeShape --> PropertyShape: sh property
     Dataset --> Dataset: prov wasDerivedFrom

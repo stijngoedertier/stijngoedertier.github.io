@@ -1,0 +1,18 @@
+@prefix omg-simulationrun:   <https://data.omgeving.vlaanderen.be/id/simulationrun/> .
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-dataset:         <https://data.omgeving.vlaanderen.be/id/dataset/> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix sosa:                <http://www.w3.org/ns/sosa/> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:                  <http://example.org/data/> .
+
+omg-simulationrun:abc123
+    a                      prov:Activity ;
+    dcterms:title          "Simulation Run abc123"@en ;
+    dcterms:description    "Traffic Scout simulation run over the Ghent transport network."@en ;
+    prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
+    prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
+    prov:wasAssociatedWith ex:TSSoftwareAgent ;
+    sosa:usedProcedure     omg-simulationmodel:traffic-scout ;
+    prov:used              omg-dataset:osm_tn_dataset .

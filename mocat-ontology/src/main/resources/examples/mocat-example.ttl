@@ -1,0 +1,162 @@
+# =============================================================================
+# MoCat complete example  (instance data)
+# =============================================================================
+
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix ex:                  <http://example.org/data/> .
+@prefix omg-dataset:         <https://data.omgeving.vlaanderen.be/id/dataset/> .
+@prefix omg-distribution:    <https://data.omgeving.vlaanderen.be/id/distribution/> .
+@prefix omg-catalog:         <https://data.omgeving.vlaanderen.be/id/catalog/> .
+@prefix omg-simulationmodel: <https://data.omgeving.vlaanderen.be/id/simulationmodel/> .
+@prefix omg-simulationrun:   <https://data.omgeving.vlaanderen.be/id/simulationrun/> .
+@prefix omg-shacl:           <https://data.omgeving.vlaanderen.be/id/shacl/> .
+@prefix omg-schema:          <https://data.omgeving.vlaanderen.be/id/schema/> .
+@prefix dcat:                <http://www.w3.org/ns/dcat#> .
+@prefix dcterms:             <http://purl.org/dc/terms/> .
+@prefix foaf:                <http://xmlns.com/foaf/0.1/> .
+@prefix geo:                 <http://www.opengis.net/ont/geosparql#> .
+@prefix mocat:               <http://example.org/ontology/mocat#> .
+@prefix p-plan:              <http://purl.org/net/p-plan#> .
+@prefix prov:                <http://www.w3.org/ns/prov#> .
+@prefix rdf:                 <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh:                  <http://www.w3.org/ns/shacl#> .
+@prefix sosa:                <http://www.w3.org/ns/sosa/> .
+@prefix xsd:                 <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ── Agents ────────────────────────────────────────────────────────────────────
+
+ex:TML
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Transport and Mobility Leuven"@en .
+
+ex:OMG
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "Departement Omgeving"@nl .
+
+ex:CEGEKA
+    a         foaf:Organization, prov:Agent ;
+    foaf:name "CEGEKA"@en .
+
+
+# ── Catalogue ─────────────────────────────────────────────────────────────────
+
+omg-catalog:OpenDataCatalogue
+    a                 dcat:Catalog ;
+    dcterms:title     "Catalog of Simulation Models"@en ;
+    dcterms:publisher ex:OMG ;
+    mocat:model       omg-simulationmodel:traffic-scout ;
+    dcat:dataset      omg-dataset:osm_tn_dataset .
+
+
+# ── Simulation Model ──────────────────────────────────────────────────────────
+
+omg-simulationmodel:traffic-scout
+    a                   prov:Plan ;
+    dcterms:title       "Traffic Scout"@en ;
+    dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide insight into local
+traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data,
+traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition
+of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level
+(municipality, district, neighborhood)."""@en ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
+    dcterms:publisher   ex:TML ;
+    dcterms:issued      "2020-03-15"^^xsd:date ;
+    dcterms:modified    "2020-03-15"^^xsd:date ;
+    mocat:input         omg-schema:TransportNetworkSchema ;
+    mocat:output        omg-schema:SimulationOutputSchema .
+
+
+# ── Simulation Run ────────────────────────────────────────────────────────────
+
+omg-simulationrun:abc123
+    a                      prov:Activity ;
+    dcterms:title          "Simulation Run abc123"@en ;
+    dcterms:description    "Traffic Scout simulation run over the Ghent transport network."@en ;
+    prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
+    prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
+    prov:wasAssociatedWith ex:TSSoftwareAgent ;
+    sosa:usedProcedure     omg-simulationmodel:traffic-scout ;
+    prov:used              omg-dataset:osm_tn_dataset .
+
+
+# ── Dataset ───────────────────────────────────────────────────────────────────
+
+omg-dataset:osm_tn_dataset
+    a                            dcat:Dataset ;
+    dcterms:title                "OpenStreetMap transport network"@en ;
+    dcterms:description          "This dataset contains a routable transport network that was derived from OpenStreetMap data."@en ;
+    dcat:keyword                 "transport network"@en, "OpenStreetMap"@en ;
+    dcat:theme                   <http://publications.europa.eu/resource/authority/data-theme/TRAN> ;
+    dcterms:publisher            ex:OMG ;
+    dcterms:issued               "2024-01-01"^^xsd:date ;
+    dcterms:modified             "2026-06-01"^^xsd:date ;
+    dcat:distribution            omg-distribution:osm_tn_geojson ;
+    dcterms:conformsTo           omg-schema:TransportNetworkSchema ;
+    p-plan:correspondsToVariable omg-schema:TransportNetworkSchema ;
+    prov:wasGeneratedBy          omg-simulationrun:abc123 ;
+    prov:wasDerivedFrom          omg-dataset:osm_raw_dataset .
+
+omg-distribution:osm_tn_geojson
+    a                dcat:Distribution ;
+    dcterms:title    "OSM transport network GeoJSON"@en ;
+    dcterms:format   <http://publications.europa.eu/resource/authority/file-type/GEOJSON> ;
+    dcat:accessURL   <https://data.omgeving.vlaanderen.be/id/dataset/osm_tn_dataset> ;
+    dcat:downloadURL <https://data.omgeving.vlaanderen.be/files/osm_tn_dataset.geojson> .
+
+
+# ── Data Specification ────────────────────────────────────────────────────────
+
+omg-schema:TransportNetworkSchema
+    a                  p-plan:Variable ;
+    dcterms:title      "Transport Network schema"@en ;
+    dcterms:description "A transport network consists of vertices and edges."@en ;
+    sh:node            omg-shacl:TransportVertexShape ;
+    sh:node            omg-shacl:TransportEdgeShape .
+
+omg-shacl:TransportVertexShape
+    a              sh:NodeShape ;
+    sh:name        "Transport Vertex"@en ;
+    sh:description "A vertex (node) in the transport network."@en ;
+    sh:targetClass ex:TransportVertex ;
+    sh:property    [ sh:path        ex:geom ;
+                     sh:name        "geometry"@en ;
+                     sh:description "Point geometry of the vertex."@en ;
+                     sh:datatype    geo:wktLiteral ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport vertex must have exactly one (point) geometry." ; ] .
+
+omg-shacl:TransportEdgeShape
+    a              sh:NodeShape ;
+    sh:name        "Transport Edge"@en ;
+    sh:description "An edge (link) in the transport network."@en ;
+    sh:targetClass ex:TransportEdge ;
+    sh:property    [ sh:path        ex:length ;
+                     sh:name        "length"@en ;
+                     sh:description "Length of the edge in metres."@en ;
+                     sh:datatype    xsd:double ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one length property." ; ] ;
+    sh:property    [ sh:path        ex:source ;
+                     sh:name        "source vertex"@en ;
+                     sh:description "Start vertex of the edge."@en ;
+                     sh:class       ex:TransportNode ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one source vertex." ; ] ;
+    sh:property    [ sh:path        ex:sink ;
+                     sh:name        "sink vertex"@en ;
+                     sh:description "End vertex of the edge."@en ;
+                     sh:class       ex:TransportNode ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one sink vertex." ; ] ;
+    sh:property    [ sh:path        ex:geom ;
+                     sh:name        "geometry"@en ;
+                     sh:description "Linestring geometry of the edge."@en ;
+                     sh:datatype    geo:wktLiteral ;
+                     sh:minCount    1 ;
+                     sh:maxCount    1 ;
+                     sh:message     "A transport edge must have exactly one (linestring) geometry." ; ] .
