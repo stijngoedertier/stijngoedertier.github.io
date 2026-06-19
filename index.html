@@ -186,25 +186,27 @@ classDiagram
     }
 
     class SimulationModel["SimulationModel
-      prov:Plan"] {
+      mocat:SimulationModel
+      prov:Plan · p-plan:Step"] {
         dct:title
         dct:description
         dcat:keyword
+        dct:publisher
+        dct:issued
+        dct:modified
     }
 
     class SimulationRun["SimulationRun
+      mocat:SimulationRun
       prov:Activity"] {
         dct:title
         dct:description
-        dct:identifier
-        dct:modified
-        dct:language
-        dct:publisher
         prov:startedAtTime
         prov:endedAtTime
     }
 
     class DataSpecification["DataSpecification
+      mocat:DataSpecification
       p-plan:Variable"] {
         dct:title
         dct:description
@@ -224,7 +226,8 @@ classDiagram
         sh:description
         sh:datatype
         sh:minCount
-        sh:maxCount}
+        sh:maxCount
+    }
 
     class Dataset["Dataset
       dcat:Dataset"] {
@@ -235,7 +238,9 @@ classDiagram
         dct:publisher
         dct:issued
         dct:modified
+        dct:hasVersion
         dcat:distribution
+        spdx-core:verifiedUsing
     }
 
     class Distribution["Distribution
@@ -245,7 +250,6 @@ classDiagram
         dct:format
         dcat:accessURL
         dcat:downloadURL
-        spdx:checksum
     }
 
     class DataService["DataService
@@ -254,43 +258,52 @@ classDiagram
         dct:description
         dcat:endpointURL
         dcat:endpointDescription
-        dcat:servesDataset
+        spdx-sw:packageVersion
     }
 
     class Agent["Agent
-      foaf:Agent"] {
+      mocat:Agent
+      prov:SoftwareAgent · spdx-sw:Package"] {
         foaf:name
+        spdx-sw:packageVersion
+        spdx-sw:packageUrl
+        spdx-sw:downloadLocation
+        spdx-sw:homePage
+        spdx-sw:primaryPurpose
     }
 
-    style SimulationModel fill:#f9f,stroke:#333,stroke-width:4px
-    style SimulationRun fill:#f9f,stroke:#333,stroke-width:4px
-    style DataSpecification fill:#f9f,stroke:#333,stroke-width:4px
-    style NodeShape fill:#f9f,stroke:#333,stroke-width:4px
-    style PropertyShape fill:#f9f,stroke:#333,stroke-width:4px
+    style SimulationModel   fill:#BFDBFE,stroke:#2563EB,color:#000
+    style SimulationRun     fill:#BBF7D0,stroke:#16A34A,color:#000
+    style Dataset           fill:#FED7AA,stroke:#EA580C,color:#000
+    style Distribution      fill:#FED7AA,stroke:#EA580C,color:#000
+    style DataSpecification fill:#DDD6FE,stroke:#7C3AED,color:#000
+    style NodeShape         fill:#DDD6FE,stroke:#7C3AED,color:#000
+    style PropertyShape     fill:#DDD6FE,stroke:#7C3AED,color:#000
+    style Agent             fill:#E0F2FE,stroke:#0284C7,color:#000
+    style DataService       fill:#E0F2FE,stroke:#0284C7,color:#000
 
-    %% Inheritance
+    %% Inheritance (rdfs:subClassOf)
     Resource <|-- Dataset
     Resource <|-- DataService
     Resource <|-- Catalog
     Resource <|-- DataSpecification
+    Resource <|-- SimulationRun
 
     %% Relationships
     Catalog --> Dataset : dcat dataset
     Catalog --> DataService : dcat service
-    Catalog --> SimulationModel : model
+    Catalog --> SimulationModel : mocat model
     Dataset --> Distribution : dcat distribution
-    Resource --> Agent : dct publisher
     DataService --> Dataset : dcat servesDataset
     SimulationModel --> DataSpecification : mocat input
-    SimulationModel -->  DataSpecification : output
-    Dataset --> DataSpecification : dct conformsTo
+    SimulationModel --> DataSpecification : mocat output
+    Dataset --> DataSpecification : mocat conformsToSpecification
     Dataset --> DataSpecification : p-plan correspondsToVariable
-    DataSpecification --> NodeShape: sh node
-    NodeShape --> PropertyShape: sh property
-    Dataset --> Dataset: prov wasDerivedFrom
+    DataSpecification --> NodeShape : sh node
+    NodeShape --> PropertyShape : sh property
     SimulationRun --> Dataset : prov used
-    Dataset --> SimulationRun : prov wasGeneratedBy
-    SimulationRun --> SimulationModel: sosa usedProcedure
+    SimulationRun --> Dataset : prov generated
+    SimulationRun --> SimulationModel : p-plan correspondsToStep
     SimulationRun --> Agent : prov wasAssociatedWith
 
   </pre>
@@ -414,23 +427,21 @@ classDiagram
 
         <aside class="example" title="Simulation Model">
   <pre class="ttl">
+
 omg-simulationmodel:traffic-scout
     a                   prov:Plan ;
-    dcterms:type        mocat:stimulation_model ;
     dcterms:title       "Traffic Scout"@en ;
     dcterms:description """Traffic Scout combines an interactive map and a simulation tool to provide insight into local
 traffic flows based on, among other things, local traffic sensors. The technology is based on Telraam data,
 traffic indicators, geodata, and OpenStreetMap. The TS model supports model calculations (including the addition
 of network changes) for near-synchronous operation. The TS tool focuses on applications at the meso-level
 (municipality, district, neighborhood)."""@en ;
+    dcat:keyword        "traffic"@en, "simulation"@en ;
     dcterms:publisher   ex:TML ;
-    dcterms:creator     ex:TML, ex:CEGEKA ;
     dcterms:issued      "2020-03-15"^^xsd:date ;
     dcterms:modified    "2020-03-15"^^xsd:date ;
-    dcat:keyword        "traffic"@en, "simulation"@en ;
-    dcat:contactPoint   ex:TrafficScoutContact ;
-    dcat:distribution   omg-distribution:traffic-scout-jar-dist ;
-    mocat:input         omg-schema:TransportNetworkSchema .
+    mocat:input         omg-schema:TransportNetworkSchema ;
+    mocat:output        omg-schema:SimulationOutputSchema .
   </pre>
         </aside>
 
@@ -539,14 +550,13 @@ omg-shacl:TransportEdgeShape
             <pre>
 omg-simulationrun:abc123
     a                      prov:Activity ;
-    dcterms:type           ex:SimulationRun ;
-    rdfs:label             "Simulation Run abc123"@en ;
+    dcterms:title          "Simulation Run abc123"@en ;
+    dcterms:description    "Traffic Scout simulation run over the Ghent transport network."@en ;
     prov:startedAtTime     "2026-06-01T00:00:00Z"^^xsd:dateTime ;
     prov:endedAtTime       "2026-06-01T00:12:59Z"^^xsd:dateTime ;
     prov:wasAssociatedWith ex:TSSoftwareAgent ;
-    prov:wasDerivedFrom    omg-simulationmodel:traffic-scout ;
-    prov:used              omg-dataset:osm_tn_dataset ;
-    prov:used              ex:run_configuration .
+    sosa:usedProcedure     omg-simulationmodel:traffic-scout ;
+    prov:used              omg-dataset:osm_tn_dataset .
 
             </pre>
         </aside>
@@ -576,11 +586,28 @@ omg-simulationrun:abc123
         <aside class="example" title="Input dataset">
         <pre>
 omg-dataset:osm_tn_dataset
-    a                   dcat:Dataset ;
-    dcterms:conformsTo  omg-schema:TransportNetworkSchema ;
-    dcterms:title       "OpenStreetMap transport network"@en ;
-    dcterms:description """This dataset contains a routable transport network
-                       that was derived from OpenStreetMap data."""@en .
+    a                            dcat:Dataset ;
+    dcterms:title                "OpenStreetMap transport network"@en ;
+    dcterms:description          """This dataset contains a routable transport network
+that was derived from OpenStreetMap data."""@en ;
+    dcat:keyword                 "transport network"@en, "OpenStreetMap"@en ;
+    dcat:theme                   &gt;http://publications.europa.eu/resource/authority/data-theme/TRAN&lt; ;
+    dcterms:publisher            ex:OMG ;
+    dcterms:issued               "2024-01-01"^^xsd:date ;
+    dcterms:modified             "2026-06-01"^^xsd:date ;
+    dcat:distribution            omg-distribution:osm_tn_geojson ;
+    dcterms:conformsTo           omg-schema:TransportNetworkSchema ;
+    p-plan:correspondsToVariable omg-schema:TransportNetworkSchema ;
+    prov:wasGeneratedBy          omg-simulationrun:abc123 ;
+    prov:wasDerivedFrom          omg-dataset:osm_raw_dataset .
+
+omg-distribution:osm_tn_geojson
+    a                dcat:Distribution ;
+    dcterms:title    "OSM transport network GeoJSON"@en ;
+    dcterms:format   &gt;http://publications.europa.eu/resource/authority/file-type/GEOJSON&lt; ;
+    dcat:accessURL   &gt;https://data.omgeving.vlaanderen.be/id/dataset/osm_tn_dataset&lt; ;
+    dcat:downloadURL &gt;https://data.omgeving.vlaanderen.be/files/osm_tn_dataset.geojson&lt; .
+
         </pre>
         </aside>
 
