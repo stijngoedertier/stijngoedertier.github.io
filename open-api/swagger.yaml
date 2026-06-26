@@ -1,0 +1,964 @@
+openapi: 3.1.0
+info:
+  title: Simulation Model API
+  version: 0.0.1
+  description: >
+    ## Overview
+
+
+    The **Simulation Model API** provides a RESTful interface for executing
+    simulation models against datasets and retrieving their results. It is
+    designed around an asynchronous run lifecycle: a client submits a run
+    request, polls for status, and fetches results once the run completes.
+
+
+    ## Key Concepts
+
+
+    - **SimulationModel** – A `prov:Plan` resource registered on the server. It
+      describes a simulation model's identity, keywords, publisher, and issue
+      date. Crucially, it declares its expected input and produced output
+      DataSpecifications via `mocat:input` and `mocat:output`, making the
+      contract between model and data fully explicit and machine-readable.
+
+    - **Dataset** – A DCAT-inspired resource that describes a dataset and its
+      distributions (file downloads, API endpoints, etc.). Datasets are
+      referenced by IRI.
+
+    - **DataSpecification** – A semantic specification (typed as `p-plan:Variable`
+      from the P-PLAN ontology) that defines the structural and semantic
+      constraints a Dataset must satisfy. A DataSpecification is composed of
+      zero or more `sh:NodeShape` resources, each of which may carry zero or
+      more `sh:PropertyShape` constraints, following the W3C SHACL vocabulary.
+      Conformance of a Dataset against a DataSpecification can be verified via
+      the `/validate` endpoint, which returns a standard SHACL Validation Report.
+
+    - **SimulationRun** – A single execution of a SimulationModel against one or
+      more input datasets. Runs are asynchronous and progress through the states
+      `pending → running → completed | failed`. Provenance is captured using the
+      W3C PROV Ontology: input datasets are linked via `prov:used` and the
+      single output dataset produced by the run is linked via `prov:generated`.
+
+
+    ## Typical Workflow
+
+
+    1. **Discover models** – `GET /simulationmodel` to browse available
+       simulationmodel, optionally filtering by keyword, domain, or tag.
+
+    2. **Start a run** – `POST /simulationmodel/{modelId}/run` with one or more
+       dataset IRIs. The API returns a `SimulationRun` in `pending` or `running`
+       state (HTTP 202).
+
+    3. **Poll for status** – `GET /simulationrun/{runId}` until `status` is
+       `completed` or `failed`.
+
+    4. **Inspect the output** – The completed `SimulationRun` carries a
+       `prov:generated` IRI pointing to the output `Dataset`. Use
+       `GET /datasets/{datasetId}` to retrieve its metadata and distributions.
+
+    5. **Inspect input datasets** – `GET /datasets/{datasetId}` can also be used
+       to retrieve metadata for any of the `prov:used` input datasets.
+
+
+    6. **Validate a dataset** – `POST /validate` with a `datasetIri` and a
+       `dataSpecificationIri` to check whether the dataset conforms to the
+       DataSpecification. Returns a SHACL Validation Report.
+
+
+    ## Authentication
+
+
+    All endpoints are protected with OAuth 2.0 using the OpenID Connect (OIDC)
+    authorization code flow. Clients must obtain a bearer token from the
+    authorization server and include it in every request via the
+    `Authorization: Bearer <token>` header.
+
+
+    The following OAuth 2.0 scopes are defined:
+
+    - `simulations:read` – Read access to simulation runs and datasets.
+
+    - `simulations:write` – Permission to start new simulation runs.
+
+    - `simulations:validate` – Permission to trigger dataset validation.
+
+
+    ## Error Handling
+
+
+    The API uses standard HTTP status codes. Errors return a JSON body where
+    available. Common codes:
+
+    - `400 Bad Request` – Malformed or invalid request body.
+
+    - `401 Unauthorized` – Missing or invalid bearer token.
+
+    - `403 Forbidden` – Valid token but insufficient scope.
+
+    - `404 Not Found` – The requested resource does not exist.
+
+    - `409 Conflict` – The operation cannot be performed in the current resource
+      state.
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+
+paths:
+  /simulationmodel:
+    get:
+      summary: List available simulation models
+      description: >
+        Returns a paginated list of SimulationModel resources registered on the
+        server. Use the query parameters to filter by keyword, domain, or tag,
+        and to control pagination.
+      operationId: listsimulationmodel
+      security:
+        - oidcAuth:
+            - simulations:read
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: >
+            Free-text search term matched against the model's name and
+            description (case-insensitive, partial match).
+          schema:
+            type: string
+          example: flood
+        - name: domain
+          in: query
+          required: false
+          description: >
+            Filter by domain or application area (e.g. hydrology, climate,
+            traffic). Matches are case-insensitive and exact.
+          schema:
+            type: string
+          example: hydrology
+        - name: tags
+          in: query
+          required: false
+          description: >
+            Comma-separated list of tags. Only models that carry **all** of the
+            specified tags are returned.
+          schema:
+            type: string
+          example: "calibrated,open-source"
+        - name: page
+          in: query
+          required: false
+          description: One-based page number for paginated results.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of results per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+        - name: sort
+          in: query
+          required: false
+          description: >
+            Field to sort by. Prefix with `-` for descending order
+            (e.g. `-createdAt` returns newest first).
+          schema:
+            type: string
+            enum: [name, -name, createdAt, -createdAt, domain, -domain]
+            default: name
+          example: -createdAt
+      responses:
+        "200":
+          description: >
+            A Hydra PagedCollection whose `hydra:member` items are of type
+            `SimulationModel`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedCollection"
+              example:
+                "@context": "https://www.w3.org/ns/hydra/context.jsonld"
+                "@type": "hydra:Collection"
+                "hydra:totalItems": 84
+                "hydra:member":
+                  - "@type": "prov:Plan"
+                    iri: "https://data.omgeving.vlaanderen.be/id/simulationmodel/traffic-scout"
+                    "dcterms:title": "Traffic Scout"
+                    "dcat:keyword": ["traffic", "simulation"]
+                    "dcterms:publisher": "http://example.org/data/TML"
+                    "dcterms:issued": "2020-03-15"
+                    "mocat:input":
+                      - "https://data.omgeving.vlaanderen.be/id/schema/TransportNetworkSchema"
+                    "mocat:output":
+                      - "https://data.omgeving.vlaanderen.be/id/schema/SimulationOutputSchema"
+                "hydra:view":
+                  "@type": "hydra:PartialCollectionView"
+                  "hydra:first": "/simulationmodel?page=1&pageSize=20"
+                  "hydra:last": "/simulationmodel?page=5&pageSize=20"
+                  "hydra:next": "/simulationmodel?page=2&pageSize=20"
+        "400":
+          description: Invalid query parameter value.
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:read.
+
+  /dataspecification:
+    get:
+      summary: List available data specifications
+      description: >
+        Returns a paginated list of DataSpecification resources registered on
+        the server. Use the query parameters to filter by keyword or tag, and
+        to control pagination.
+      operationId: listDataSpecifications
+      security:
+        - oidcAuth:
+            - simulations:read
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: >
+            Free-text search term matched against the specification's title and
+            description (case-insensitive, partial match).
+          schema:
+            type: string
+          example: transport
+        - name: tags
+          in: query
+          required: false
+          description: >
+            Comma-separated list of tags. Only specifications carrying **all**
+            of the specified tags are returned.
+          schema:
+            type: string
+          example: "network,geometry"
+        - name: page
+          in: query
+          required: false
+          description: One-based page number for paginated results.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of results per page.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          required: false
+          description: >
+            Field to sort by. Prefix with `-` for descending order.
+          schema:
+            type: string
+            enum: [title, -title, createdAt, -createdAt]
+            default: title
+      responses:
+        "200":
+          description: >
+            A Hydra PagedCollection whose `hydra:member` items are of type
+            `DataSpecification`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedCollection"
+              example:
+                "@context": "https://www.w3.org/ns/hydra/context.jsonld"
+                "@type": "hydra:Collection"
+                "hydra:totalItems": 3
+                "hydra:member":
+                  - "@type": "DataSpecification"
+                    iri: "https://data.omgeving.vlaanderen.be/id/schema/TransportNetworkSchema"
+                    title: "Transport Network schema"
+                "hydra:view":
+                  "@type": "hydra:PartialCollectionView"
+                  "hydra:first": "/dataspecification?page=1&pageSize=20"
+                  "hydra:last": "/dataspecification?page=1&pageSize=20"
+        "400":
+          description: Invalid query parameter value.
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:read.
+
+  /dataspecification/{specificationId}:
+    get:
+      summary: Retrieve a data specification
+      description: >
+        Returns a single DataSpecification resource, including its NodeShapes
+        and their PropertyShapes.
+      operationId: getDataSpecification
+      security:
+        - oidcAuth:
+            - simulations:read
+      parameters:
+        - name: specificationId
+          in: path
+          required: true
+          description: Local identifier of the DataSpecification.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: DataSpecification resource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataSpecification"
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:read.
+        "404":
+          description: DataSpecification not found.
+
+  /validate:
+    post:
+      summary: Validate a dataset against a data specification
+      description: >
+        Checks whether the Dataset identified by `datasetIri` conforms to the
+        DataSpecification identified by `dataSpecificationIri`. The server
+        retrieves both resources, applies the SHACL NodeShapes and
+        PropertyShapes defined in the specification, and returns a standard
+        SHACL Validation Report. The report is returned regardless of whether
+        validation passes or fails; inspect `sh:conforms` to determine the
+        outcome.
+      operationId: validateDataset
+      security:
+        - oidcAuth:
+            - simulations:validate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [datasetIri, dataSpecificationIri]
+              properties:
+                datasetIri:
+                  type: string
+                  format: iri
+                  description: IRI of the Dataset to validate.
+                  example: "https://data.omgeving.vlaanderen.be/id/dataset/RoadNetwork2024"
+                dataSpecificationIri:
+                  type: string
+                  format: iri
+                  description: IRI of the DataSpecification to validate against.
+                  example: "https://data.omgeving.vlaanderen.be/id/schema/TransportNetworkSchema"
+      responses:
+        "200":
+          description: >
+            SHACL Validation Report. `sh:conforms` is `true` when the dataset
+            satisfies all constraints, `false` otherwise. On failure the report
+            includes one `sh:ValidationResult` per violated constraint.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationReport"
+              example:
+                "@context":
+                  sh: "http://www.w3.org/ns/shacl#"
+                "@type": "sh:ValidationReport"
+                "sh:conforms": false
+                "sh:result":
+                  - "@type": "sh:ValidationResult"
+                    "sh:resultSeverity": "sh:Violation"
+                    "sh:focusNode": "https://data.example.org/vertex/42"
+                    "sh:resultPath": "ex:geom"
+                    "sh:resultMessage": "A transport vertex must have exactly one (point) geometry."
+                    "sh:sourceShape": "https://data.omgeving.vlaanderen.be/id/shacl/TransportVertexShape"
+        "400":
+          description: Malformed request body or unresolvable IRI.
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:validate.
+        "404":
+          description: Dataset or DataSpecification not found.
+        "422":
+          description: >
+            The referenced Dataset or DataSpecification could not be parsed or
+            is not a valid RDF graph.
+
+  /simulationmodel/{modelId}/run:
+    post:
+      summary: Start a new simulation run
+      description: >
+        Asynchronously starts a SimulationRun for the specified SimulationModel.
+        Accepts one or more dataset Iris as input. Returns a SimulationRun
+        resource with status e.g. "pending" or "running".
+      operationId: startSimulationRun
+      security:
+        - oidcAuth:
+            - simulations:write
+      parameters:
+        - name: modelId
+          description: ID of the SimulationModel to run.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["prov:used"]
+              properties:
+                "prov:used":
+                  type: array
+                  description: >
+                    One or more IRIs referencing DCAT-based Dataset resources
+                    consumed by this run (W3C PROV-O prov:used).
+                  minItems: 1
+                  items:
+                    type: string
+                    format: iri
+                metadata:
+                  type: object
+                  description: Optional metadata for the run.
+      responses:
+        "202":
+          description: Simulation run accepted and started asynchronously.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationRun"
+        "400":
+          description: Invalid input.
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:write.
+        "404":
+          description: Simulation model not found.
+
+  /datasets/{datasetId}:
+    get:
+      summary: Retrieve a dataset description
+      description: Returns a DCAT‑based Dataset resource.
+      operationId: getDataset
+      security:
+        - oidcAuth:
+            - simulations:read
+      parameters:
+        - name: datasetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dataset metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:read.
+        "404":
+          description: Dataset not found.
+
+  /simulationrun/{runId}:
+    get:
+      summary: Get the status of a simulation run
+      operationId: getSimulationRun
+      security:
+        - oidcAuth:
+            - simulations:read
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Simulation run status and details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationRun"
+        "401":
+          description: Unauthorized. Missing or invalid bearer token.
+        "403":
+          description: Forbidden. Insufficient scope; requires simulations:read.
+        "404":
+          description: Simulation run not found.
+
+components:
+  securitySchemes:
+    oidcAuth:
+      type: oauth2
+      description: >
+        OAuth 2.0 with OpenID Connect. Use the authorization code flow to obtain
+        a bearer token from the OIDC provider, then supply it as
+        `Authorization: Bearer <token>` on every request.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth2/authorize
+          tokenUrl: https://auth.example.com/oauth2/token
+          refreshUrl: https://auth.example.com/oauth2/token
+          scopes:
+            simulations:read: Read simulation runs, results, and datasets.
+            simulations:write: Start new simulation runs.
+            simulations:validate: Trigger SHACL validation of a dataset against a data specification.
+
+  schemas:
+
+    DataSpecification:
+      description: >
+        A semantic data specification, typed as `p-plan:Variable` from the
+        P-PLAN ontology (http://purl.org/net/p-plan#Variable). It groups zero
+        or more SHACL NodeShapes that together express the structural and
+        semantic constraints a conforming Dataset must satisfy.
+      type: object
+      required: [iri, title]
+      properties:
+        iri:
+          type: string
+          format: iri
+          description: Globally unique IRI identifying this DataSpecification.
+          example: "https://data.omgeving.vlaanderen.be/id/schema/TransportNetworkSchema"
+        title:
+          type: string
+          description: Human-readable title (dcterms:title).
+          example: "Transport Network schema"
+        description:
+          type: string
+          description: Human-readable description of the specification (dcterms:description).
+          example: "A transport network consists of vertices and edges."
+        tags:
+          type: array
+          description: Arbitrary labels for filtering and discovery.
+          items:
+            type: string
+          example: ["network", "geometry"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the specification was registered on the server.
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of the last update to the specification.
+        "sh:node":
+          type: array
+          description: >
+            Zero or more NodeShapes (sh:node) that define the constraints of
+            this DataSpecification.
+          items:
+            $ref: "#/components/schemas/NodeShape"
+
+    NodeShape:
+      description: >
+        A SHACL NodeShape (sh:NodeShape) that constrains instances of a target
+        class. A NodeShape belongs to exactly one DataSpecification and may
+        carry zero or more PropertyShapes.
+      type: object
+      required: [iri, "sh:name", "sh:targetClass"]
+      properties:
+        iri:
+          type: string
+          format: iri
+          description: Globally unique IRI identifying this NodeShape.
+          example: "https://data.omgeving.vlaanderen.be/id/shacl/TransportVertexShape"
+        "sh:name":
+          type: string
+          description: Human-readable name of the shape (sh:name).
+          example: "Transport Vertex"
+        "sh:description":
+          type: string
+          description: Human-readable description of the shape (sh:description).
+          example: "A vertex (node) in the transport network."
+        "sh:targetClass":
+          type: string
+          format: iri
+          description: >
+            IRI of the RDF class whose instances are validated by this shape
+            (sh:targetClass).
+          example: "http://example.org/TransportVertex"
+        "sh:property":
+          type: array
+          description: Zero or more PropertyShapes constraining properties of the target class.
+          items:
+            $ref: "#/components/schemas/PropertyShape"
+
+    PropertyShape:
+      description: >
+        A SHACL PropertyShape (sh:PropertyShape, declared inline via sh:property)
+        that constrains a single RDF property on nodes validated by the parent
+        NodeShape.
+      type: object
+      required: ["sh:path"]
+      properties:
+        "sh:path":
+          type: string
+          format: iri
+          description: IRI of the RDF property being constrained (sh:path).
+          example: "http://example.org/geom"
+        "sh:name":
+          type: string
+          description: Human-readable name for the property (sh:name).
+          example: "geometry"
+        "sh:description":
+          type: string
+          description: Human-readable description of the constraint (sh:description).
+          example: "Point geometry of the vertex."
+        "sh:datatype":
+          type: string
+          format: iri
+          description: >
+            Required XSD or other datatype IRI of the property value
+            (sh:datatype). Mutually exclusive with sh:class.
+          example: "http://www.opengis.net/ont/geosparql#wktLiteral"
+        "sh:class":
+          type: string
+          format: iri
+          description: >
+            Required RDF class of the property value (sh:class). Mutually
+            exclusive with sh:datatype.
+          example: "http://example.org/TransportNode"
+        "sh:minCount":
+          type: integer
+          minimum: 0
+          description: Minimum number of values the property must have (sh:minCount).
+          example: 1
+        "sh:maxCount":
+          type: integer
+          minimum: 0
+          description: Maximum number of values the property may have (sh:maxCount).
+          example: 1
+        "sh:message":
+          type: string
+          description: >
+            Human-readable message reported when this constraint is violated
+            (sh:message).
+          example: "A transport vertex must have exactly one (point) geometry."
+
+    ValidationReport:
+      description: >
+        A SHACL Validation Report (sh:ValidationReport) produced by validating
+        a Dataset against a DataSpecification. `sh:conforms` is the primary
+        outcome indicator; `sh:result` is populated only when `sh:conforms` is
+        `false`.
+      type: object
+      required: ["@type", "sh:conforms"]
+      properties:
+        "@context":
+          type: object
+          description: JSON-LD context mapping prefixes used in the report.
+          example:
+            sh: "http://www.w3.org/ns/shacl#"
+        "@type":
+          type: string
+          enum: ["sh:ValidationReport"]
+          description: Fixed JSON-LD type.
+        "sh:conforms":
+          type: boolean
+          description: >
+            `true` if the dataset satisfies all constraints in the
+            DataSpecification; `false` if one or more constraints are violated.
+          example: false
+        "sh:result":
+          type: array
+          description: >
+            One ValidationResult per violated constraint. Present only when
+            `sh:conforms` is `false`.
+          items:
+            $ref: "#/components/schemas/ValidationResult"
+
+    ValidationResult:
+      description: >
+        A single SHACL ValidationResult (sh:ValidationResult) describing one
+        constraint violation found during validation.
+      type: object
+      required: ["@type", "sh:resultSeverity", "sh:focusNode", "sh:resultMessage", "sh:sourceShape"]
+      properties:
+        "@type":
+          type: string
+          enum: ["sh:ValidationResult"]
+        "sh:resultSeverity":
+          type: string
+          description: >
+            Severity of the violation. One of `sh:Violation`, `sh:Warning`, or
+            `sh:Info`.
+          enum: ["sh:Violation", "sh:Warning", "sh:Info"]
+          example: "sh:Violation"
+        "sh:focusNode":
+          type: string
+          format: iri
+          description: IRI of the RDF resource that triggered the violation.
+          example: "https://data.example.org/vertex/42"
+        "sh:resultPath":
+          type: string
+          format: iri
+          nullable: true
+          description: >
+            IRI of the property path that was evaluated (sh:resultPath). Null
+            for node-level constraints.
+          example: "http://example.org/geom"
+        "sh:resultMessage":
+          type: string
+          description: Human-readable description of the violation (sh:resultMessage).
+          example: "A transport vertex must have exactly one (point) geometry."
+        "sh:sourceShape":
+          type: string
+          format: iri
+          description: IRI of the NodeShape or PropertyShape that raised the violation.
+          example: "https://data.omgeving.vlaanderen.be/id/shacl/TransportVertexShape"
+        "sh:value":
+          type: string
+          nullable: true
+          description: >
+            The actual value that caused the violation (sh:value), serialised
+            as a string. Null when no specific value can be identified.
+
+    SimulationModel:
+      description: >
+        A simulation model registered on the server, typed as `prov:Plan` from
+        the W3C PROV Ontology (https://www.w3.org/TR/prov-o/#Plan). A Plan is
+        an entity that describes the steps or instructions to be carried out by
+        an agent, here the simulation engine. Metadata follows Dublin Core Terms
+        (dcterms) and DCAT conventions; input and output contracts are expressed
+        as references to DataSpecification resources using the `mocat:input` and
+        `mocat:output` predicates.
+      type: object
+      required: [iri, "dcterms:title", "dcterms:issued"]
+      properties:
+        iri:
+          type: string
+          format: iri
+          description: >
+            Globally unique IRI identifying this SimulationModel
+            (prov:Plan).
+          example: "https://data.omgeving.vlaanderen.be/id/simulationmodel/traffic-scout"
+        "dcterms:title":
+          type: string
+          description: Human-readable name of the model (dcterms:title).
+          example: "Traffic Scout"
+        "dcterms:description":
+          type: string
+          description: >
+            Detailed description of what the model simulates, its intended use
+            cases, and limitations (dcterms:description).
+          example: >
+            Traffic Scout combines an interactive map and a simulation tool to
+            provide insight into local traffic flows.
+        "dcat:keyword":
+          type: array
+          description: >
+            Keywords or tags describing the model's subject matter
+            (dcat:keyword).
+          items:
+            type: string
+          example: ["traffic", "simulation"]
+        "dcterms:publisher":
+          type: string
+          format: iri
+          description: >
+            IRI of the agent (organisation or person) responsible for publishing
+            the model (dcterms:publisher).
+          example: "http://example.org/data/TML"
+        "dcterms:issued":
+          type: string
+          format: date
+          description: >
+            Date on which the model was first issued or registered
+            (dcterms:issued, xsd:date).
+          example: "2020-03-15"
+        "dcterms:modified":
+          type: string
+          format: date
+          nullable: true
+          description: >
+            Date of the most recent modification to the model registration
+            (dcterms:modified, xsd:date).
+          example: "2020-03-15"
+        "mocat:input":
+          type: array
+          description: >
+            IRIs of the DataSpecification resources that describe the structure
+            and constraints of the datasets this model expects as input
+            (mocat:input). Each IRI references a DataSpecification (prov:Variable).
+          items:
+            type: string
+            format: iri
+          example:
+            - "https://data.omgeving.vlaanderen.be/id/schema/TransportNetworkSchema"
+        "mocat:output":
+          type: array
+          description: >
+            IRIs of the DataSpecification resources that describe the structure
+            and constraints of the datasets this model produces as output
+            (mocat:output). Each IRI references a DataSpecification (prov:Variable).
+          items:
+            type: string
+            format: iri
+          example:
+            - "https://data.omgeving.vlaanderen.be/id/schema/SimulationOutputSchema"
+
+    PagedCollection:
+      description: >
+        A Hydra-inspired generic paged collection. The `member` array holds the
+        items for the current page; the `@type` field on each member indicates
+        the concrete resource type (e.g. `SimulationModel`, `Dataset`,
+        `SimulationRun`). Navigation links follow Hydra's `hydra:view` /
+        `hydra:PartialCollectionView` convention.
+      type: object
+      required: ["@context", "@type", "hydra:totalItems", "hydra:member"]
+      properties:
+        "@context":
+          type: string
+          description: JSON-LD context URL.
+          example: "https://www.w3.org/ns/hydra/context.jsonld"
+        "@type":
+          type: string
+          description: Fixed value identifying this as a Hydra Collection.
+          enum: ["hydra:Collection"]
+        "hydra:totalItems":
+          type: integer
+          description: Total number of items matching the query across all pages.
+          example: 84
+        "hydra:member":
+          type: array
+          description: >
+            Items on the current page. Each item is an arbitrary resource object;
+            the `@type` property on each member identifies its concrete type.
+          items:
+            type: object
+            description: Any resource type (SimulationModel, Dataset, SimulationRun, …).
+        "hydra:view":
+          type: object
+          description: >
+            Pagination navigation links following `hydra:PartialCollectionView`.
+            Omitted when the entire collection fits on one page.
+          required: ["@type", "hydra:first", "hydra:last"]
+          properties:
+            "@type":
+              type: string
+              enum: ["hydra:PartialCollectionView"]
+            "hydra:first":
+              type: string
+              format: uri
+              description: URL of the first page.
+              example: "/simulationmodel?page=1&pageSize=20"
+            "hydra:last":
+              type: string
+              format: uri
+              description: URL of the last page.
+              example: "/simulationmodel?page=5&pageSize=20"
+            "hydra:previous":
+              type: string
+              format: uri
+              description: URL of the previous page. Omitted on the first page.
+              example: "/simulationmodel?page=1&pageSize=20"
+            "hydra:next":
+              type: string
+              format: uri
+              description: URL of the next page. Omitted on the last page.
+              example: "/simulationmodel?page=3&pageSize=20"
+
+    Dataset:
+      description: >
+        A DCAT‑inspired Dataset resource. Includes a Iri identifier, title,
+        description, and one or more distributions.
+      type: object
+      required: [Iri, title, description, distribution]
+      properties:
+        Iri:
+          type: string
+          format: Iri
+          description: Unique identifier of the dataset.
+        title:
+          type: string
+          description: Human‑readable title of the dataset.
+        description:
+          type: string
+          description: Description of the dataset contents.
+        distribution:
+          type: array
+          description: >
+            One or more distributions describing how the dataset is made
+            available (e.g., file download, API endpoint).
+          items:
+            $ref: "#/components/schemas/Distribution"
+
+    Distribution:
+      description: A DCAT‑inspired distribution describing dataset access.
+      type: object
+      required: [accessURL]
+      properties:
+        accessURL:
+          type: string
+          format: Iri
+          description: URL where the distribution can be accessed.
+        mediaType:
+          type: string
+          description: MIME type of the distribution.
+        format:
+          type: string
+          description: File format or encoding.
+
+    SimulationRun:
+      type: object
+      required: [id, modelId, status, createdAt]
+      properties:
+        id:
+          type: string
+        modelId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        "prov:used":
+          type: array
+          description: >
+            IRIs of the Dataset resources consumed by this run as input,
+            expressed as prov:used from the W3C PROV Ontology
+            (https://www.w3.org/TR/prov-o/#used).
+          minItems: 1
+          items:
+            type: string
+            format: iri
+        "prov:generated":
+          type: string
+          format: iri
+          nullable: true
+          description: >
+            IRI of the single Dataset resource produced by this run as output,
+            expressed as prov:generated from the W3C PROV Ontology
+            (https://www.w3.org/TR/prov-o/#generated). Null until the run
+            reaches the `completed` status.
